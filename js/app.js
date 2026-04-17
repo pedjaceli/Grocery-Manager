@@ -19,6 +19,11 @@ document.addEventListener('DOMContentLoaded', async () => {
   // ── Chargement des données depuis l'API Flask ─────────────
   await loadDB();
 
+  // ── Vider les champs que le navigateur pourrait auto-remplir
+  document.querySelectorAll('input[type="text"], input[type="search"]').forEach(el => {
+    el.value = '';
+  });
+
   // ── Rendu initial ─────────────────────────────────────────
   renderDashboard();
 
