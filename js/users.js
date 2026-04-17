@@ -25,11 +25,11 @@ async function loadCurrentUser() {
 // Charger et afficher la liste des utilisateurs
 async function renderUsers() {
   const tbody = document.getElementById('usersList');
-  tbody.innerHTML = '<tr><td colspan="3" class="text-center text-muted py-4">Chargement…</td></tr>';
+  tbody.innerHTML = `<tr><td colspan="3" class="text-center text-muted py-4">${t('users_loading')}</td></tr>`;
   try {
     const users = await apiFetch('/api/users');
     if (!users.length) {
-      tbody.innerHTML = '<tr><td colspan="3" class="text-center text-muted py-4">Aucun utilisateur</td></tr>';
+      tbody.innerHTML = `<tr><td colspan="3" class="text-center text-muted py-4">${t('users_none')}</td></tr>`;
       return;
     }
     tbody.innerHTML = users.map(u => `
@@ -37,8 +37,8 @@ async function renderUsers() {
         <td>
           <i class="bi bi-person-circle me-2 text-muted"></i>
           <strong>${escHtml(u.username)}</strong>
-          ${u.is_admin ? '<span class="badge bg-warning text-dark ms-2"><i class="bi bi-shield-fill me-1"></i>Admin</span>' : ''}
-          ${u.is_me ? '<span class="badge bg-primary ms-2">Moi</span>' : ''}
+          ${u.is_admin ? `<span class="badge bg-warning text-dark ms-2"><i class="bi bi-shield-fill me-1"></i>Admin</span>` : ''}
+          ${u.is_me ? `<span class="badge bg-primary ms-2">${t('users_me_badge')}</span>` : ''}
         </td>
         <td class="text-muted small">${formatDateShort(u.created_at)}</td>
         <td class="text-end">
@@ -51,7 +51,7 @@ async function renderUsers() {
       </tr>
     `).join('');
   } catch (e) {
-    tbody.innerHTML = '<tr><td colspan="3" class="text-danger text-center py-3">Erreur de chargement</td></tr>';
+    tbody.innerHTML = `<tr><td colspan="3" class="text-danger text-center py-3">${t('users_error')}</td></tr>`;
   }
 }
 
@@ -92,7 +92,7 @@ async function submitAddUser() {
       body: JSON.stringify({ username, password }),
     });
     bsAddUserModal.hide();
-    showToast('Utilisateur créé avec succès !', 'success');
+    showToast(t('toast_user_created'), 'success');
     renderUsers();
   } catch (e) {
     alertEl.innerHTML = alertHtml(e.message || 'Erreur lors de la création.');
@@ -107,10 +107,10 @@ function confirmDeleteUser(id, username) {
     bsConfirmModal.hide();
     try {
       await apiFetch(`/api/users/${id}`, { method: 'DELETE' });
-      showToast('Utilisateur supprimé.', 'success');
+      showToast(t('toast_user_deleted'), 'success');
       renderUsers();
     } catch (e) {
-      showToast(e.message || 'Erreur lors de la suppression.', 'danger');
+      showToast(e.message || t('toast_delete_error'), 'danger');
     }
   };
   bsConfirmModal.show();
@@ -141,7 +141,7 @@ async function changeMyPassword() {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ password: newPwd }),
     });
-    alertEl.innerHTML = `<div class="alert alert-success py-2 mb-3">Mot de passe modifié avec succès !</div>`;
+    alertEl.innerHTML = `<div class="alert alert-success py-2 mb-3">${t('pwd_success')}</div>`;
     document.getElementById('newPassword').value = '';
     document.getElementById('confirmPassword').value = '';
   } catch (e) {

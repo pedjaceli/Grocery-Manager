@@ -1,8 +1,11 @@
 'use strict';
 
-// ─── Month labels ─────────────────────────────────────────────
+// ─── Month labels (uses i18n if available) ────────────────────
 const MONTHS_FR   = ['Jan','Fév','Mar','Avr','Mai','Jun','Jul','Aoû','Sep','Oct','Nov','Déc'];
 const MONTHS_FULL = ['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
+// Helpers dynamiques
+function getMonths()      { return (typeof t === 'function') ? t('months')       : MONTHS_FULL; }
+function getMonthsShort() { return (typeof t === 'function') ? t('months_short') : MONTHS_FR; }
 
 // ─── Currency formatter (€ FR) ────────────────────────────────
 function fmt(amount) {

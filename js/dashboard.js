@@ -11,11 +11,11 @@ function renderDashboard() {
 
   // ── Stat cards ────────────────────────────────────────────
   document.getElementById('stat-month').textContent       = fmt(sum(monthRevs));
-  document.getElementById('stat-month-count').textContent = `${monthRevs.length} entrée(s)`;
+  document.getElementById('stat-month-count').textContent = `${monthRevs.length} ${t('stat_entries')}`;
   document.getElementById('stat-year').textContent        = fmt(sum(yearRevs));
-  document.getElementById('stat-year-count').textContent  = `${yearRevs.length} entrée(s)`;
+  document.getElementById('stat-year-count').textContent  = `${yearRevs.length} ${t('stat_entries')}`;
   document.getElementById('stat-total').textContent       = fmt(sum(db.revenues));
-  document.getElementById('stat-total-count').textContent = `${db.revenues.length} entrée(s)`;
+  document.getElementById('stat-total-count').textContent = `${db.revenues.length} ${t('stat_entries')}`;
 
   // Average over last 12 months
   const months12 = {};
@@ -39,7 +39,7 @@ function renderDashboard() {
     recentEl.innerHTML = `
       <div class="empty-state">
         <i class="bi bi-inbox"></i>
-        <p>Aucun revenu enregistré</p>
+        <p>${t('empty_no_revenue')}</p>
       </div>`;
   } else {
     recentEl.innerHTML = `
@@ -47,7 +47,8 @@ function renderDashboard() {
         <table class="table table-hover mb-0">
           <thead>
             <tr>
-              <th>Date</th><th>Description</th><th>Catégorie</th><th>Montant</th>
+              <th>${t('col_date')}</th><th>${t('col_description')}</th>
+              <th>${t('col_category')}</th><th>${t('col_amount')}</th>
             </tr>
           </thead>
           <tbody>
@@ -77,7 +78,7 @@ function renderDashboard() {
     catBreakEl.innerHTML = `
       <div class="empty-state" style="padding:24px 0;">
         <i class="bi bi-tags"></i>
-        <p>Aucune donnée ce mois</p>
+        <p>${t('empty_no_data')}</p>
       </div>`;
     return;
   }
@@ -101,7 +102,7 @@ function renderDashboard() {
                aria-valuenow="${pct}" aria-valuemin="0" aria-valuemax="100">
           </div>
         </div>
-        <div class="progress-pct">${pct}% du total</div>
+        <div class="progress-pct">${pct}% ${t('pct_of_total')}</div>
       </div>`;
   }).join('');
 }

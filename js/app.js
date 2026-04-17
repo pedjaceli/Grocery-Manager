@@ -7,6 +7,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   bsCategoryModal = new bootstrap.Modal(document.getElementById('categoryModal'));
   bsConfirmModal  = new bootstrap.Modal(document.getElementById('confirmModal'));
 
+  // ── Langue sauvegardée ────────────────────────────────────
+  initLanguage();
+
   // ── Thème sauvegardé ──────────────────────────────────────
   loadTheme();
 

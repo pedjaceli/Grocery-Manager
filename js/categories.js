@@ -5,7 +5,7 @@ function renderCategoryList() {
   const el   = document.getElementById('category-list');
 
   if (db.categories.length === 0) {
-    el.innerHTML = `<div class="empty-state"><i class="bi bi-tags"></i><p>Aucune catégorie</p></div>`;
+    el.innerHTML = `<div class="empty-state"><i class="bi bi-tags"></i><p>${t('empty_no_categories')}</p></div>`;
     return;
   }
 
@@ -17,7 +17,7 @@ function renderCategoryList() {
         <span class="cat-emoji">${c.icon}</span>
         <div class="cat-dot" style="background:${c.color};"></div>
         <span class="cat-name">${escHtml(c.name)}</span>
-        <span class="cat-count">${count} revenu(s)</span>
+        <span class="cat-count">${count} ${t('cat_revenue_count')}</span>
         <button class="btn btn-outline-secondary btn-sm me-1"
                 onclick="openEditCategoryModal('${c.id}')">
           <i class="bi bi-pencil"></i>
@@ -43,7 +43,7 @@ async function submitCategory() {
   clearCategoryErrors();
   if (!name) {
     document.getElementById('cf-name').classList.add('is-invalid');
-    document.getElementById('ce-name').textContent = 'Nom requis';
+    document.getElementById('ce-name').textContent = t('err_cat_name');
     return;
   }
 
@@ -53,16 +53,16 @@ async function submitCategory() {
   try {
     if (editingCategoryId) {
       await updateCategory(editingCategoryId, { name, icon, color });
-      showToast('Catégorie mise à jour');
+      showToast(t('toast_category_updated'));
     } else {
       await addCategory({ name, icon, color });
-      showToast('Catégorie créée');
+      showToast(t('toast_category_added'));
     }
     bsCategoryModal.hide();
     renderCategoryList();
     _resetCategoryFilter();
   } catch {
-    showToast('Erreur lors de la sauvegarde', 'error');
+    showToast(t('toast_save_error'), 'error');
   } finally {
     btn.disabled = false;
   }
@@ -71,17 +71,17 @@ async function submitCategory() {
 function askDeleteCategory(id) {
   const c = db.categories.find(x => x.id === id);
   if (!c) return;
-  confirmDelete(`Supprimer la catégorie "${c.name}" ?`, async () => {
+  confirmDelete(`${t('confirm_delete_cat')} "${c.name}" ?`, async () => {
     try {
       await deleteCategory(id);
-      showToast('Catégorie supprimée');
+      showToast(t('toast_category_deleted'));
       renderCategoryList();
       _resetCategoryFilter();
-    } catch { showToast('Erreur lors de la suppression', 'error'); }
+    } catch { showToast(t('toast_delete_error'), 'error'); }
   });
 }
 
 function _resetCategoryFilter() {
   document.getElementById('filter-category').innerHTML =
-    '<option value="">Toutes catégories</option>';
+    `<option value="">${t('filter_all_categories')}</option>`;
 }
