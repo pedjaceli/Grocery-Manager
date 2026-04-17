@@ -19,4 +19,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   // ── Rendu initial ─────────────────────────────────────────
   renderDashboard();
 
+  // ── Guide de démarrage (première connexion) ───────────────
+  checkOnboarding();
+
 });
