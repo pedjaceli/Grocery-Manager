@@ -178,17 +178,18 @@
           <!-- Filters -->
           <div class="card mb-3">
             <div class="card-body py-2">
+              <!-- Champs leurres pour bloquer l'autofill Chrome -->
+              <input type="text" style="display:none;" aria-hidden="true" />
+              <input type="password" style="display:none;" aria-hidden="true" />
+              <!-- Barre de recherche pleine largeur -->
+              <div class="input-group mb-2">
+                <span class="input-group-text"><i class="bi bi-search"></i></span>
+                <input type="search" class="form-control" id="search-input"
+                  placeholder="Rechercher…" data-i18n-placeholder="search_placeholder"
+                  autocomplete="off" name="search-revenues" oninput="renderRevenueList()" />
+              </div>
+              <!-- Filtres sur une 2e ligne -->
               <div class="row g-2 align-items-center">
-                <div class="col-12 col-md">
-                  <!-- Champs leurres pour bloquer l'autofill Chrome -->
-                  <input type="text" style="display:none;" aria-hidden="true" />
-                  <input type="password" style="display:none;" aria-hidden="true" />
-                  <div class="input-group input-group-sm">
-                    <span class="input-group-text"><i class="bi bi-search"></i></span>
-                    <input type="search" class="form-control" id="search-input" placeholder="Rechercher…" data-i18n-placeholder="search_placeholder"
-                      autocomplete="off" name="search-revenues" oninput="renderRevenueList()" />
-                  </div>
-                </div>
                 <div class="col-auto">
                   <select class="form-select form-select-sm" id="filter-category" onchange="renderRevenueList()">
                     <option value="">Toutes catégories</option>
@@ -206,7 +207,7 @@
                 </div>
                 <div class="col-auto">
                   <button class="btn btn-outline-secondary btn-sm" onclick="clearFilters()">
-                    <i class="bi bi-x-lg"></i> Reset
+                    <i class="bi bi-x-lg"></i> <span data-i18n="btn_clear_filters">Effacer</span>
                   </button>
                 </div>
               </div>
