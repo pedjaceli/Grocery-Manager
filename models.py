@@ -16,6 +16,7 @@ class User(db.Model):
     id            = db.Column(db.String(36), primary_key=True, default=gen_id)
     username      = db.Column(db.String(80), unique=True, nullable=False)
     password_hash = db.Column(db.String(256), nullable=False)
+    is_admin      = db.Column(db.Boolean, default=False, nullable=False)
     created_at    = db.Column(db.DateTime, default=lambda: datetime.now(timezone.utc))
 
     def set_password(self, password):

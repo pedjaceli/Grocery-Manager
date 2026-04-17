@@ -32,6 +32,16 @@ def login_required(f):
         return f(*args, **kwargs)
     return decorated
 
+def admin_required(f):
+    @wraps(f)
+    def decorated(*args, **kwargs):
+        if not session.get('logged_in'):
+            return redirect('/login')
+        if not session.get('is_admin'):
+            return jsonify({'error': 'Accès réservé à l\'administrateur.'}), 403
+        return f(*args, **kwargs)
+    return decorated
+
 # ─── Default categories ───────────────────────────────────────
 DEFAULT_CATEGORIES = [
     {'id': 'salary',     'name': 'Salaire',         'color': '#6366f1', 'icon': '💼'},
@@ -66,7 +76,8 @@ def login():
     user = User.query.filter_by(username=username).first()
     if user and user.check_password(password):
         session['logged_in'] = True
-        session['username']   = user.username
+        session['username']  = user.username
+        session['is_admin']  = user.is_admin
         return redirect('/')
     return render_template('login.html', error='Nom d\'utilisateur ou mot de passe incorrect.')
 
@@ -90,12 +101,15 @@ def register():
         return render_template('register.html', error='Le mot de passe doit contenir au moins 6 caractères.')
     if password != password2:
         return render_template('register.html', error='Les mots de passe ne correspondent pas.')
-    user = User(username=username)
+    # Le premier compte créé devient automatiquement admin
+    is_first = User.query.count() == 0
+    user = User(username=username, is_admin=is_first)
     user.set_password(password)
     db.session.add(user)
     db.session.commit()
     session['logged_in'] = True
-    session['username']   = user.username
+    session['username']  = user.username
+    session['is_admin']  = user.is_admin
     return redirect('/')
 
 @app.route('/logout')
@@ -234,8 +248,8 @@ def reset_data():
 def get_me():
     user = User.query.filter_by(username=session['username']).first()
     if not user:
-        return jsonify({'username': session.get('username', '')}), 200
-    return jsonify({'id': user.id, 'username': user.username})
+        return jsonify({'username': session.get('username', ''), 'is_admin': False}), 200
+    return jsonify({'id': user.id, 'username': user.username, 'is_admin': user.is_admin})
 
 @app.route('/api/me/password', methods=['PUT'])
 @login_required
@@ -252,19 +266,20 @@ def change_my_password():
     return '', 204
 
 @app.route('/api/users', methods=['GET'])
-@login_required
+@admin_required
 def list_users():
     users = User.query.order_by(User.created_at).all()
     me    = session.get('username')
     return jsonify([{
         'id':         u.id,
         'username':   u.username,
+        'is_admin':   u.is_admin,
         'created_at': u.created_at.isoformat() if u.created_at else None,
         'is_me':      u.username == me,
     } for u in users])
 
 @app.route('/api/users', methods=['POST'])
-@login_required
+@admin_required
 def create_user():
     data     = request.get_json()
     username = data.get('username', '').strip()
@@ -275,14 +290,14 @@ def create_user():
         return jsonify({'error': 'Le mot de passe doit contenir au moins 6 caractères.'}), 400
     if User.query.filter_by(username=username).first():
         return jsonify({'error': 'Ce nom d\'utilisateur est déjà pris.'}), 409
-    user = User(username=username)
+    user = User(username=username, is_admin=False)
     user.set_password(password)
     db.session.add(user)
     db.session.commit()
     return jsonify({'id': user.id, 'username': user.username}), 201
 
 @app.route('/api/users/<id>', methods=['DELETE'])
-@login_required
+@admin_required
 def delete_user(id):
     user = User.query.get_or_404(id)
     if user.username == session.get('username'):

@@ -7,12 +7,18 @@ function initUsersModal() {
   }
 }
 
-// Afficher le nom de l'utilisateur connecté dans la sidebar
+// Afficher le nom de l'utilisateur connecté + afficher/cacher le menu admin
 async function loadCurrentUser() {
   try {
     const data = await apiFetch('/api/me');
     const el = document.getElementById('currentUsername');
     if (el) el.textContent = data.username;
+
+    // Afficher le menu "Utilisateurs" uniquement pour l'admin
+    const usersNavBtn = document.querySelector('.nav-item[data-page="users"]');
+    if (usersNavBtn) {
+      usersNavBtn.style.display = data.is_admin ? '' : 'none';
+    }
   } catch (e) {}
 }
 
@@ -31,6 +37,7 @@ async function renderUsers() {
         <td>
           <i class="bi bi-person-circle me-2 text-muted"></i>
           <strong>${escHtml(u.username)}</strong>
+          ${u.is_admin ? '<span class="badge bg-warning text-dark ms-2"><i class="bi bi-shield-fill me-1"></i>Admin</span>' : ''}
           ${u.is_me ? '<span class="badge bg-primary ms-2">Moi</span>' : ''}
         </td>
         <td class="text-muted small">${formatDateShort(u.created_at)}</td>
