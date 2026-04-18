@@ -593,7 +593,7 @@ function renderProductAggregation() {
   if (rows.length === 0) {
     container.innerHTML = `
       <div class="empty-state">
-        <i class="bi bi-boxes"></i>
+        <i class="bi bi-bag"></i>
         <p>${t('agg_empty')}</p>
       </div>`;
     return;
