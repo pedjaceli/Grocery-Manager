@@ -104,12 +104,32 @@ def register():
     username  = request.form.get('username', '').strip()
     password  = request.form.get('password', '')
     password2 = request.form.get('password2', '')
+    lang      = request.form.get('lang', 'en')
+
+    errors = {
+        'en': {
+            'required':   'All fields are required.',
+            'min_pwd':    'Password must be at least 6 characters.',
+            'no_match':   'Passwords do not match.',
+            'taken':      'This username is already taken.',
+        },
+        'fr': {
+            'required':   'Tous les champs sont obligatoires.',
+            'min_pwd':    'Le mot de passe doit contenir au moins 6 caractères.',
+            'no_match':   'Les mots de passe ne correspondent pas.',
+            'taken':      'Ce nom d\'utilisateur est déjà pris.',
+        },
+    }
+    e = errors.get(lang, errors['en'])
+
     if not username or not password:
-        return render_template('register.html', error='Tous les champs sont obligatoires.')
+        return render_template('register.html', error=e['required'])
     if len(password) < 6:
-        return render_template('register.html', error='Le mot de passe doit contenir au moins 6 caractères.')
+        return render_template('register.html', error=e['min_pwd'])
     if password != password2:
-        return render_template('register.html', error='Les mots de passe ne correspondent pas.')
+        return render_template('register.html', error=e['no_match'])
+    if User.query.filter_by(username=username).first():
+        return render_template('register.html', error=e['taken'])
     # Le premier compte créé devient automatiquement admin
     is_first = User.query.count() == 0
     user = User(username=username, is_admin=is_first)
