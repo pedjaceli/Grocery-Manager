@@ -986,6 +986,55 @@ input:-webkit-autofill:focus {
 }
 
 /* ═══════════════════════════════════════════════
+   PRODUCT AUTOCOMPLETE
+═══════════════════════════════════════════════ */
+.product-input-wrap { position: relative; }
+
+.product-dropdown {
+  /* position: fixed + top/left/width set via JS — échappe aux overflow containers */
+  position: fixed;
+  background: var(--bg-card);
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  box-shadow: 0 8px 28px rgba(0,0,0,.14);
+  z-index: 1065;   /* au-dessus du modal Bootstrap (1060) */
+  max-height: 180px;
+  overflow-y: auto;
+  animation: dropdownFade .12s ease;
+}
+@keyframes dropdownFade {
+  from { opacity: 0; transform: translateY(-4px); }
+  to   { opacity: 1; transform: none; }
+}
+
+.product-dropdown-item {
+  padding: 8px 12px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  cursor: pointer;
+  border-bottom: 1px solid var(--border-light);
+  transition: background .1s, color .1s;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.product-dropdown-item:last-child { border-bottom: none; }
+.product-dropdown-item:hover,
+.product-dropdown-item.active {
+  background: var(--bg-table-hover);
+  color: var(--text-primary);
+}
+.product-dropdown-item strong {
+  color: var(--indigo);
+  font-weight: 700;
+}
+
+/* Dark mode */
+[data-theme="dark"] .product-dropdown {
+  box-shadow: 0 8px 28px rgba(0,0,0,.45);
+}
+
+/* ═══════════════════════════════════════════════
    DÉPENSES — NAV TABS SCROLLABLES
 ═══════════════════════════════════════════════ */
 .card-header .nav-tabs {

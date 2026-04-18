@@ -200,9 +200,12 @@ function addInvoiceItemRow(item = null) {
   const tr = document.createElement('tr');
   tr.innerHTML = `
     <td>
-      <input type="text" class="form-control form-control-sm inv-product"
-             value="${item ? escHtml(item.product_name) : ''}"
-             placeholder="${t('inv_product_placeholder')}" />
+      <div class="product-input-wrap">
+        <input type="text" class="form-control form-control-sm inv-product"
+               value="${item ? escHtml(item.product_name) : ''}"
+               placeholder="${t('inv_product_placeholder')}"
+               autocomplete="off" />
+      </div>
     </td>
     <td style="width:90px">
       <input type="number" class="form-control form-control-sm inv-qty"
@@ -221,6 +224,117 @@ function addInvoiceItemRow(item = null) {
     </td>`;
   tbody.appendChild(tr);
   tr.querySelector('.inv-price').addEventListener('input', updateInvoiceLineTotals);
+  attachProductAutocomplete(tr.querySelector('.inv-product'));
+}
+
+// ─── Product Autocomplete ─────────────────────────────────────
+function getKnownProducts() {
+  const names = new Set();
+  // From all saved invoices
+  db.invoices.forEach(inv => inv.items.forEach(item => names.add(item.product_name)));
+  // From currently open form rows (not yet saved)
+  document.querySelectorAll('#inv-items-body .inv-product').forEach(inp => {
+    const v = inp.value.trim();
+    if (v) names.add(v);
+  });
+  return [...names].sort((a, b) => a.localeCompare(b));
+}
+
+function attachProductAutocomplete(input) {
+  let activeIndex = -1;
+  let currentDropdown = null;
+
+  function closeDropdown() {
+    currentDropdown?.remove();
+    currentDropdown = null;
+    activeIndex = -1;
+  }
+
+  function positionDropdown() {
+    if (!currentDropdown) return;
+    const rect = input.getBoundingClientRect();
+    currentDropdown.style.top   = `${rect.bottom + 3}px`;
+    currentDropdown.style.left  = `${rect.left}px`;
+    currentDropdown.style.width = `${rect.width}px`;
+  }
+
+  function openDropdown(matches) {
+    closeDropdown();
+    if (!matches.length) return;
+
+    const div = document.createElement('div');
+    div.className = 'product-dropdown';
+    const val = input.value.trim();
+
+    matches.forEach(name => {
+      const item = document.createElement('div');
+      item.className = 'product-dropdown-item';
+      item.dataset.name = name;
+
+      const idx = name.toLowerCase().indexOf(val.toLowerCase());
+      if (idx >= 0) {
+        item.innerHTML =
+          escHtml(name.slice(0, idx)) +
+          `<strong>${escHtml(name.slice(idx, idx + val.length))}</strong>` +
+          escHtml(name.slice(idx + val.length));
+      } else {
+        item.textContent = name;
+      }
+
+      item.addEventListener('mousedown', e => {
+        e.preventDefault();
+        input.value = name;
+        closeDropdown();
+        updateInvoiceLineTotals();
+      });
+      div.appendChild(item);
+    });
+
+    // Append to body so overflow containers don't clip it
+    document.body.appendChild(div);
+    currentDropdown = div;
+    positionDropdown();
+  }
+
+  function refreshDropdown() {
+    const val = input.value.trim().toLowerCase();
+    if (!val) { closeDropdown(); return; }
+    const matches = getKnownProducts().filter(n => n.toLowerCase().includes(val));
+    openDropdown(matches);
+  }
+
+  input.addEventListener('input',  refreshDropdown);
+  input.addEventListener('focus',  refreshDropdown);
+  input.addEventListener('blur',   () => setTimeout(closeDropdown, 150));
+
+  // Reposition on scroll or resize (modal scroll, window resize)
+  const reposition = () => currentDropdown && positionDropdown();
+  window.addEventListener('scroll',  reposition, true);
+  window.addEventListener('resize',  reposition);
+
+  input.addEventListener('keydown', e => {
+    if (!currentDropdown) return;
+    const items = currentDropdown.querySelectorAll('.product-dropdown-item');
+
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      activeIndex = Math.min(activeIndex + 1, items.length - 1);
+      items.forEach((el, i) => el.classList.toggle('active', i === activeIndex));
+      items[activeIndex]?.scrollIntoView({ block: 'nearest' });
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      activeIndex = Math.max(activeIndex - 1, 0);
+      items.forEach((el, i) => el.classList.toggle('active', i === activeIndex));
+      items[activeIndex]?.scrollIntoView({ block: 'nearest' });
+    } else if (e.key === 'Enter' && activeIndex >= 0) {
+      e.preventDefault();
+      input.value = items[activeIndex].dataset.name;
+      closeDropdown();
+      updateInvoiceLineTotals();
+    } else if (e.key === 'Escape') {
+      closeDropdown();
+    }
+  });
 }
 
 function removeInvoiceItemRow(btn) {
