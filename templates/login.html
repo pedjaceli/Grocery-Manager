@@ -129,11 +129,11 @@
     <form method="POST" action="/login">
       <div class="mb-3">
         <label class="form-label" id="lbl-username"></label>
-        <input type="text" name="username" class="form-control" required autofocus />
+        <input type="text" name="username" class="form-control" required autofocus autocomplete="off" />
       </div>
       <div class="mb-4">
         <label class="form-label" id="lbl-password"></label>
-        <input type="password" name="password" class="form-control" required />
+        <input type="password" name="password" class="form-control" required autocomplete="new-password" />
       </div>
       <button type="submit" class="btn-login" id="btn-submit"></button>
     </form>
