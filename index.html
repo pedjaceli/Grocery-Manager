@@ -428,6 +428,31 @@
               </div>
             </div>
 
+            <!-- Mot de passe -->
+            <div class="col-lg-6">
+              <div class="card">
+                <div class="card-header">
+                  <i class="bi bi-key me-2"></i><span data-i18n="users_change_pwd">Changer mon mot de passe</span>
+                </div>
+                <div class="card-body">
+                  <div id="pwdAlert"></div>
+                  <div class="mb-3">
+                    <label class="form-label small fw-semibold" data-i18n="label_new_pwd">Nouveau mot de passe</label>
+                    <input type="password" id="newPassword" class="form-control"
+                           data-i18n-placeholder="password_placeholder" />
+                  </div>
+                  <div class="mb-3">
+                    <label class="form-label small fw-semibold" data-i18n="label_confirm_pwd">Confirmer</label>
+                    <input type="password" id="confirmPassword" class="form-control" />
+                  </div>
+                  <button class="btn btn-primary btn-sm" onclick="changeMyPassword()">
+                    <i class="bi bi-check-lg me-1"></i>
+                    <span data-i18n="btn_save_pwd">Enregistrer</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
             <!-- À propos -->
             <div class="col-lg-6">
               <div class="card">
@@ -486,28 +511,6 @@
               </div>
             </div>
 
-            <!-- Changer son propre mot de passe -->
-            <div class="col-lg-6">
-              <div class="card">
-                <div class="card-header">
-                  <i class="bi bi-key me-2"></i><span data-i18n="users_change_pwd">Changer mon mot de passe</span>
-                </div>
-                <div class="card-body">
-                  <div id="pwdAlert"></div>
-                  <div class="mb-3">
-                    <label class="form-label">Nouveau mot de passe</label>
-                    <input type="password" id="newPassword" class="form-control" placeholder="Min. 6 caractères" data-i18n-placeholder="password_placeholder" />
-                  </div>
-                  <div class="mb-3">
-                    <label class="form-label">Confirmer</label>
-                    <input type="password" id="confirmPassword" class="form-control" />
-                  </div>
-                  <button class="btn btn-primary btn-sm" onclick="changeMyPassword()">
-                    <i class="bi bi-check-lg me-1"></i> Enregistrer
-                  </button>
-                </div>
-              </div>
-            </div>
           </div>
         </div>
 
