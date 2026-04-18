@@ -14,7 +14,8 @@ function renderRevenueList() {
     if (yearF  && y !== yearF)           return false;
     if (monthF && m !== monthF)          return false;
     if (search) {
-      const hay = [r.description, r.notes || '', String(r.amount)].join(' ').toLowerCase();
+      const cat = getCategoryById(r.category);
+      const hay = [r.description, r.notes || '', String(r.amount), cat ? cat.name : ''].join(' ').toLowerCase();
       if (!hay.includes(search)) return false;
     }
     return true;
