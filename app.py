@@ -2,7 +2,7 @@ import os
 from functools import wraps
 from flask import Flask, jsonify, request, send_from_directory, session, redirect, render_template
 from sqlalchemy import text, inspect as sa_inspect
-from models import db, Category, Revenue, User, gen_id
+from models import db, Category, Revenue, User, ExpenseCategory, Expense, Invoice, InvoiceItem, gen_id
 
 # ─── App setup ────────────────────────────────────────────────
 app = Flask(__name__, static_folder='.', static_url_path='')
@@ -66,6 +66,21 @@ with app.app_context():
         if 'user_id' not in rev_cols:
             conn.execute(text("ALTER TABLE revenues ADD COLUMN user_id VARCHAR(36)"))
             conn.commit()
+
+    # Add user_id to expense_categories / expenses / invoices / invoice_items if missing
+    inspector = sa_inspect(db.engine)
+    existing_tables = inspector.get_table_names()
+    with db.engine.connect() as conn:
+        for tbl, col, typ in [
+            ('expense_categories', 'user_id', 'VARCHAR(36)'),
+            ('expenses',           'user_id', 'VARCHAR(36)'),
+            ('invoices',           'user_id', 'VARCHAR(36)'),
+        ]:
+            if tbl in existing_tables:
+                cols = [c['name'] for c in inspector.get_columns(tbl)]
+                if col not in cols:
+                    conn.execute(text(f"ALTER TABLE {tbl} ADD COLUMN {col} {typ}"))
+                    conn.commit()
 
     # Assign any orphaned records to the admin user
     admin = User.query.filter_by(is_admin=True).first()
@@ -373,6 +388,156 @@ def delete_user(id):
     db.session.commit()
     return '', 204
 
+
+# ═══════════════════════════════════════════════════════════════
+# API — EXPENSE CATEGORIES
+# ═══════════════════════════════════════════════════════════════
+
+@app.route('/api/expense-categories', methods=['GET'])
+@login_required
+def get_expense_categories():
+    cats = ExpenseCategory.query.filter_by(user_id=session['user_id']).all()
+    return jsonify([c.to_dict() for c in cats])
+
+@app.route('/api/expense-categories', methods=['POST'])
+@login_required
+def create_expense_category():
+    data = request.get_json()
+    cat  = ExpenseCategory(
+        id      = gen_id(),
+        name    = data['name'],
+        color   = data.get('color', '#ef4444'),
+        icon    = data.get('icon',  '💸'),
+        user_id = session['user_id'],
+    )
+    db.session.add(cat)
+    db.session.commit()
+    return jsonify(cat.to_dict()), 201
+
+@app.route('/api/expense-categories/<id>', methods=['PUT'])
+@login_required
+def update_expense_category(id):
+    cat  = ExpenseCategory.query.filter_by(id=id, user_id=session['user_id']).first_or_404()
+    data = request.get_json()
+    cat.name  = data.get('name',  cat.name)
+    cat.color = data.get('color', cat.color)
+    cat.icon  = data.get('icon',  cat.icon)
+    db.session.commit()
+    return jsonify(cat.to_dict())
+
+@app.route('/api/expense-categories/<id>', methods=['DELETE'])
+@login_required
+def delete_expense_category(id):
+    cat = ExpenseCategory.query.filter_by(id=id, user_id=session['user_id']).first_or_404()
+    db.session.delete(cat)
+    db.session.commit()
+    return '', 204
+
+# ═══════════════════════════════════════════════════════════════
+# API — EXPENSES
+# ═══════════════════════════════════════════════════════════════
+
+@app.route('/api/expenses', methods=['GET'])
+@login_required
+def get_expenses():
+    uid      = session['user_id']
+    expenses = Expense.query.filter_by(user_id=uid).order_by(Expense.date.desc()).all()
+    return jsonify([e.to_dict() for e in expenses])
+
+@app.route('/api/expenses', methods=['POST'])
+@login_required
+def create_expense():
+    data = request.get_json()
+    exp  = Expense(
+        amount      = float(data['amount']),
+        description = data['description'],
+        category    = data['category'],
+        date        = data['date'],
+        notes       = data.get('notes', ''),
+        user_id     = session['user_id'],
+    )
+    db.session.add(exp)
+    db.session.commit()
+    return jsonify(exp.to_dict()), 201
+
+@app.route('/api/expenses/<id>', methods=['PUT'])
+@login_required
+def update_expense(id):
+    exp  = Expense.query.filter_by(id=id, user_id=session['user_id']).first_or_404()
+    data = request.get_json()
+    exp.amount      = float(data.get('amount',      exp.amount))
+    exp.description = data.get('description', exp.description)
+    exp.category    = data.get('category',    exp.category)
+    exp.date        = data.get('date',        exp.date)
+    exp.notes       = data.get('notes',       exp.notes)
+    db.session.commit()
+    return jsonify(exp.to_dict())
+
+@app.route('/api/expenses/<id>', methods=['DELETE'])
+@login_required
+def delete_expense(id):
+    exp = Expense.query.filter_by(id=id, user_id=session['user_id']).first_or_404()
+    db.session.delete(exp)
+    db.session.commit()
+    return '', 204
+
+# ═══════════════════════════════════════════════════════════════
+# API — INVOICES
+# ═══════════════════════════════════════════════════════════════
+
+@app.route('/api/invoices', methods=['GET'])
+@login_required
+def get_invoices():
+    uid      = session['user_id']
+    invoices = Invoice.query.filter_by(user_id=uid).order_by(Invoice.date.desc()).all()
+    return jsonify([inv.to_dict() for inv in invoices])
+
+@app.route('/api/invoices', methods=['POST'])
+@login_required
+def create_invoice():
+    data    = request.get_json()
+    invoice = Invoice(
+        title   = data['title'],
+        date    = data['date'],
+        user_id = session['user_id'],
+    )
+    db.session.add(invoice)
+    db.session.flush()
+    for item in data.get('items', []):
+        db.session.add(InvoiceItem(
+            invoice_id   = invoice.id,
+            product_name = item['product_name'],
+            quantity     = float(item['quantity']),
+            unit_price   = float(item['unit_price']),
+        ))
+    db.session.commit()
+    return jsonify(invoice.to_dict()), 201
+
+@app.route('/api/invoices/<id>', methods=['PUT'])
+@login_required
+def update_invoice(id):
+    invoice = Invoice.query.filter_by(id=id, user_id=session['user_id']).first_or_404()
+    data    = request.get_json()
+    invoice.title = data.get('title', invoice.title)
+    invoice.date  = data.get('date',  invoice.date)
+    InvoiceItem.query.filter_by(invoice_id=id).delete()
+    for item in data.get('items', []):
+        db.session.add(InvoiceItem(
+            invoice_id   = id,
+            product_name = item['product_name'],
+            quantity     = float(item['quantity']),
+            unit_price   = float(item['unit_price']),
+        ))
+    db.session.commit()
+    return jsonify(invoice.to_dict())
+
+@app.route('/api/invoices/<id>', methods=['DELETE'])
+@login_required
+def delete_invoice(id):
+    invoice = Invoice.query.filter_by(id=id, user_id=session['user_id']).first_or_404()
+    db.session.delete(invoice)
+    db.session.commit()
+    return '', 204
 
 # ─── Run ──────────────────────────────────────────────────────
 if __name__ == '__main__':

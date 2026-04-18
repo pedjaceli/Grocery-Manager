@@ -1,7 +1,7 @@
 'use strict';
 
 // ─── In-memory cache (peuplé depuis l'API au démarrage) ───────
-let db = { revenues: [], categories: [] };
+let db = { revenues: [], categories: [], expenses: [], expenseCategories: [], invoices: [] };
 
 // ─── Default categories (référence locale pour l'UI) ─────────
 const DEFAULT_CATEGORIES = [
@@ -37,12 +37,18 @@ async function apiFetch(url, options = {}) {
 // ─── Load all data from API ───────────────────────────────────
 async function loadDB() {
   try {
-    const [revenues, categories] = await Promise.all([
+    const [revenues, categories, expenses, expenseCategories, invoices] = await Promise.all([
       apiFetch('/api/revenues'),
       apiFetch('/api/categories'),
+      apiFetch('/api/expenses'),
+      apiFetch('/api/expense-categories'),
+      apiFetch('/api/invoices'),
     ]);
-    db.revenues   = revenues;
-    db.categories = categories;
+    db.revenues          = revenues;
+    db.categories        = categories;
+    db.expenses          = expenses;
+    db.expenseCategories = expenseCategories;
+    db.invoices          = invoices;
   } catch (err) {
     console.error('loadDB error:', err);
     showToast('Impossible de charger les données', 'error');
@@ -101,6 +107,63 @@ async function updateCategory(id, updates) {
 async function deleteCategory(id) {
   await apiFetch(`/api/categories/${id}`, { method: 'DELETE' });
   db.categories = db.categories.filter(c => c.id !== id);
+}
+
+// ─── Expense Category CRUD ────────────────────────────────────
+async function addExpenseCategory(data) {
+  const cat = await apiFetch('/api/expense-categories', { method: 'POST', headers: apiHeaders(), body: JSON.stringify(data) });
+  db.expenseCategories.push(cat);
+  return cat;
+}
+async function updateExpenseCategory(id, updates) {
+  const updated = await apiFetch(`/api/expense-categories/${id}`, { method: 'PUT', headers: apiHeaders(), body: JSON.stringify(updates) });
+  const i = db.expenseCategories.findIndex(c => c.id === id);
+  if (i >= 0) db.expenseCategories[i] = updated;
+  return updated;
+}
+async function deleteExpenseCategory(id) {
+  await apiFetch(`/api/expense-categories/${id}`, { method: 'DELETE' });
+  db.expenseCategories = db.expenseCategories.filter(c => c.id !== id);
+}
+
+// ─── Expense CRUD ─────────────────────────────────────────────
+async function addExpense(data) {
+  const entry = await apiFetch('/api/expenses', { method: 'POST', headers: apiHeaders(), body: JSON.stringify(data) });
+  db.expenses.unshift(entry);
+  return entry;
+}
+async function updateExpense(id, updates) {
+  const updated = await apiFetch(`/api/expenses/${id}`, { method: 'PUT', headers: apiHeaders(), body: JSON.stringify(updates) });
+  const i = db.expenses.findIndex(e => e.id === id);
+  if (i >= 0) db.expenses[i] = updated;
+  return updated;
+}
+async function deleteExpense(id) {
+  await apiFetch(`/api/expenses/${id}`, { method: 'DELETE' });
+  db.expenses = db.expenses.filter(e => e.id !== id);
+}
+
+// ─── Invoice CRUD ─────────────────────────────────────────────
+async function addInvoice(data) {
+  const inv = await apiFetch('/api/invoices', { method: 'POST', headers: apiHeaders(), body: JSON.stringify(data) });
+  db.invoices.unshift(inv);
+  return inv;
+}
+async function updateInvoice(id, updates) {
+  const updated = await apiFetch(`/api/invoices/${id}`, { method: 'PUT', headers: apiHeaders(), body: JSON.stringify(updates) });
+  const i = db.invoices.findIndex(inv => inv.id === id);
+  if (i >= 0) db.invoices[i] = updated;
+  return updated;
+}
+async function deleteInvoice(id) {
+  await apiFetch(`/api/invoices/${id}`, { method: 'DELETE' });
+  db.invoices = db.invoices.filter(inv => inv.id !== id);
+}
+
+// ─── Helpers ──────────────────────────────────────────────────
+function getExpenseCategoryById(id) {
+  return db.expenseCategories.find(c => c.id === id)
+    || { name: id, color: '#94a3b8', icon: '?' };
 }
 
 // ─── Reset all data ───────────────────────────────────────────

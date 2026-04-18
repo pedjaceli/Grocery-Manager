@@ -26,6 +26,7 @@ function navigate(page) {
     revenues:   t('nav_revenues'),
     charts:     t('nav_charts'),
     categories: t('nav_categories'),
+    depenses:   t('nav_depenses'),
     export:     t('nav_export'),
     settings:   t('nav_settings'),
     users:      t('nav_users'),
@@ -36,6 +37,7 @@ function navigate(page) {
   if (page === 'revenues')   renderRevenueList();
   if (page === 'charts')     renderCharts();
   if (page === 'categories') renderCategoryList();
+  if (page === 'depenses')   renderDepenses();
   if (page === 'export')     renderExportSummary();
   if (page === 'users')      renderUsers();
 }

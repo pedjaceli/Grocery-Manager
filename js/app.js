@@ -3,9 +3,12 @@
 document.addEventListener('DOMContentLoaded', async () => {
 
   // ── Bootstrap modals ──────────────────────────────────────
-  bsRevenueModal  = new bootstrap.Modal(document.getElementById('revenueModal'));
-  bsCategoryModal = new bootstrap.Modal(document.getElementById('categoryModal'));
-  bsConfirmModal  = new bootstrap.Modal(document.getElementById('confirmModal'));
+  bsRevenueModal   = new bootstrap.Modal(document.getElementById('revenueModal'));
+  bsCategoryModal  = new bootstrap.Modal(document.getElementById('categoryModal'));
+  bsConfirmModal   = new bootstrap.Modal(document.getElementById('confirmModal'));
+  bsInvoiceModal   = new bootstrap.Modal(document.getElementById('invoiceModal'));
+  bsExpenseModal   = new bootstrap.Modal(document.getElementById('expenseModal'));
+  bsExpenseCatModal = new bootstrap.Modal(document.getElementById('expenseCatModal'));
 
   // ── Langue sauvegardée ────────────────────────────────────
   initLanguage();
