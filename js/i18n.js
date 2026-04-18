@@ -221,6 +221,7 @@ const TRANSLATIONS = {
     ob_step4_p2:       'Si tu as besoin de revoir ce guide, tu peux le relancer depuis <strong>Paramètres → Guide de démarrage</strong>.',
     ob_step4_tip:      'Bonne gestion de tes revenus !',
     ob_btn_skip:       'Passer',
+    ob_btn_prev:       'Précédent',
     ob_btn_next:       'Suivant',
     ob_btn_start:      'Commencer',
 
@@ -448,6 +449,7 @@ const TRANSLATIONS = {
     ob_step4_p2:       'If you need to review this guide, you can relaunch it from <strong>Settings → Getting started guide</strong>.',
     ob_step4_tip:      'Enjoy managing your revenues!',
     ob_btn_skip:       'Skip',
+    ob_btn_prev:       'Previous',
     ob_btn_next:       'Next',
     ob_btn_start:      'Get started',
 

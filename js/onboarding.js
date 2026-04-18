@@ -34,6 +34,13 @@ function nextOnboardingStep() {
   }
 }
 
+function prevOnboardingStep() {
+  if (currentStep > 1) {
+    currentStep--;
+    updateOnboardingUI();
+  }
+}
+
 function updateOnboardingUI() {
   // Étapes
   document.querySelectorAll('.onboarding-step').forEach(el => {
@@ -53,6 +60,10 @@ function updateOnboardingUI() {
   } else {
     nextBtn.innerHTML = t('ob_btn_next') + ' <i class="bi bi-arrow-right ms-1"></i>';
   }
+
+  // Bouton précédent (masqué à la première étape)
+  const prevBtn = document.getElementById('obPrevBtn');
+  prevBtn.style.visibility = currentStep === 1 ? 'hidden' : 'visible';
 
   // Bouton passer (masqué à la dernière étape)
   const skipBtn = document.getElementById('obSkipBtn');
