@@ -796,7 +796,7 @@ input:-webkit-autofill:focus {
   padding: 6px 0;
 }
 #obSkipBtn:hover { color: var(--text-secondary); }
-#obNextBtn {
+#obNextBtn, #obPrevBtn {
   background: linear-gradient(135deg, #6366f1, #4f46e5);
   border: none;
   color: white;
@@ -809,7 +809,7 @@ input:-webkit-autofill:focus {
   display: flex;
   align-items: center;
 }
-#obNextBtn:hover {
+#obNextBtn:hover, #obPrevBtn:hover {
   background: linear-gradient(135deg, #818cf8, #6366f1);
   transform: translateY(-1px);
   box-shadow: 0 4px 14px rgba(99,102,241,.4);
