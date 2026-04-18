@@ -23,12 +23,12 @@ function navigate(page) {
 
   const titles = {
     dashboard:  'Dashboard',
-    revenues:   'Revenus',
-    charts:     'Graphiques',
-    categories: 'Catégories',
-    export:     'Export',
-    settings:   'Paramètres',
-    users:      'Utilisateurs',
+    revenues:   t('nav_revenues'),
+    charts:     t('nav_charts'),
+    categories: t('nav_categories'),
+    export:     t('nav_export'),
+    settings:   t('nav_settings'),
+    users:      t('nav_users'),
   };
   document.getElementById('page-title').textContent = titles[page] || '';
 

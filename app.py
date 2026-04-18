@@ -48,9 +48,7 @@ def _seed_default_categories(user_id):
         db.session.add(Category(id=gen_id(), name=c['name'], color=c['color'], icon=c['icon'], user_id=user_id))
 
 # ─── Default categories ───────────────────────────────────────
-DEFAULT_CATEGORIES = [
-    {'name': 'Salaire', 'color': '#6366f1', 'icon': '💼'},
-]
+DEFAULT_CATEGORIES = []
 
 # ─── Create tables + migrate + assign orphaned data to admin ─
 with app.app_context():
