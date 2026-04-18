@@ -29,7 +29,7 @@ def login_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
         if not session.get('logged_in'):
-            return redirect('/login')
+            return redirect('/register')
         return f(*args, **kwargs)
     return decorated
 
@@ -37,7 +37,7 @@ def admin_required(f):
     @wraps(f)
     def decorated(*args, **kwargs):
         if not session.get('logged_in'):
-            return redirect('/login')
+            return redirect('/register')
         if not session.get('is_admin'):
             return jsonify({'error': 'Accès réservé à l\'administrateur.'}), 403
         return f(*args, **kwargs)
