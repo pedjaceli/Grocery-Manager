@@ -2,7 +2,7 @@
 
 // ─── Onboarding ───────────────────────────────────────────────
 const ONBOARDING_KEY = 'rm-onboarding-done';
-const TOTAL_STEPS    = 5;
+const TOTAL_STEPS    = 6;
 let currentStep      = 1;
 
 // Lancer automatiquement si jamais vu
