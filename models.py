@@ -29,10 +29,11 @@ class User(db.Model):
 class Category(db.Model):
     __tablename__ = 'categories'
 
-    id    = db.Column(db.String(36), primary_key=True, default=gen_id)
-    name  = db.Column(db.String(100), nullable=False)
-    color = db.Column(db.String(7),   nullable=False, default='#6366f1')
-    icon  = db.Column(db.String(10),  nullable=False, default='📦')
+    id      = db.Column(db.String(36), primary_key=True, default=gen_id)
+    name    = db.Column(db.String(100), nullable=False)
+    color   = db.Column(db.String(7),   nullable=False, default='#6366f1')
+    icon    = db.Column(db.String(10),  nullable=False, default='📦')
+    user_id = db.Column(db.String(36),  db.ForeignKey('users.id'), nullable=True)
 
     def to_dict(self):
         return {
@@ -53,6 +54,7 @@ class Revenue(db.Model):
     date        = db.Column(db.String(10),  nullable=False)   # YYYY-MM-DD
     notes       = db.Column(db.String(500), default='')
     created_at  = db.Column(db.DateTime,    default=lambda: datetime.now(timezone.utc))
+    user_id     = db.Column(db.String(36),  db.ForeignKey('users.id'), nullable=True)
 
     def to_dict(self):
         return {

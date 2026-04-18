@@ -1,6 +1,7 @@
 import os
 from functools import wraps
 from flask import Flask, jsonify, request, send_from_directory, session, redirect, render_template
+from sqlalchemy import text, inspect as sa_inspect
 from models import db, Category, Revenue, User, gen_id
 
 # ─── App setup ────────────────────────────────────────────────
@@ -42,6 +43,10 @@ def admin_required(f):
         return f(*args, **kwargs)
     return decorated
 
+def _seed_default_categories(user_id):
+    for c in DEFAULT_CATEGORIES:
+        db.session.add(Category(id=gen_id(), name=c['name'], color=c['color'], icon=c['icon'], user_id=user_id))
+
 # ─── Default categories ───────────────────────────────────────
 DEFAULT_CATEGORIES = [
     {'id': 'salary',     'name': 'Salaire',         'color': '#6366f1', 'icon': '💼'},
@@ -52,13 +57,28 @@ DEFAULT_CATEGORIES = [
     {'id': 'other',      'name': 'Autre',            'color': '#6b7280', 'icon': '📦'},
 ]
 
-# ─── Create tables + seed on first launch ────────────────────
+# ─── Create tables + migrate + assign orphaned data to admin ─
 with app.app_context():
     os.makedirs(os.path.join(basedir, 'instance'), exist_ok=True)
     db.create_all()
-    if Category.query.count() == 0:
-        for c in DEFAULT_CATEGORIES:
-            db.session.add(Category(**c))
+
+    # Add user_id column to existing tables if missing (SQLite migration)
+    inspector = sa_inspect(db.engine)
+    with db.engine.connect() as conn:
+        cat_cols = [c['name'] for c in inspector.get_columns('categories')]
+        rev_cols = [c['name'] for c in inspector.get_columns('revenues')]
+        if 'user_id' not in cat_cols:
+            conn.execute(text("ALTER TABLE categories ADD COLUMN user_id VARCHAR(36)"))
+            conn.commit()
+        if 'user_id' not in rev_cols:
+            conn.execute(text("ALTER TABLE revenues ADD COLUMN user_id VARCHAR(36)"))
+            conn.commit()
+
+    # Assign any orphaned records to the admin user
+    admin = User.query.filter_by(is_admin=True).first()
+    if admin:
+        Category.query.filter_by(user_id=None).update({'user_id': admin.id})
+        Revenue.query.filter_by(user_id=None).update({'user_id': admin.id})
         db.session.commit()
 
 # ═══════════════════════════════════════════════════════════════
@@ -78,6 +98,7 @@ def login():
         session['logged_in'] = True
         session['username']  = user.username
         session['is_admin']  = user.is_admin
+        session['user_id']   = user.id
         return redirect('/')
     return render_template('login.html', error='Nom d\'utilisateur ou mot de passe incorrect.')
 
@@ -101,10 +122,13 @@ def register():
     user = User(username=username, is_admin=is_first)
     user.set_password(password)
     db.session.add(user)
+    db.session.flush()  # get user.id before commit
+    _seed_default_categories(user.id)
     db.session.commit()
     session['logged_in'] = True
     session['username']  = user.username
     session['is_admin']  = user.is_admin
+    session['user_id']   = user.id
     return redirect('/')
 
 @app.route('/forgot-password', methods=['GET'])
@@ -160,7 +184,8 @@ def static_files(path):
 @app.route('/api/revenues', methods=['GET'])
 @login_required
 def get_revenues():
-    revenues = Revenue.query.order_by(Revenue.date.desc()).all()
+    uid = session['user_id']
+    revenues = Revenue.query.filter_by(user_id=uid).order_by(Revenue.date.desc()).all()
     return jsonify([r.to_dict() for r in revenues])
 
 
@@ -174,6 +199,7 @@ def create_revenue():
         category    = data['category'],
         date        = data['date'],
         notes       = data.get('notes', ''),
+        user_id     = session['user_id'],
     )
     db.session.add(rev)
     db.session.commit()
@@ -183,7 +209,7 @@ def create_revenue():
 @app.route('/api/revenues/<id>', methods=['PUT'])
 @login_required
 def update_revenue(id):
-    rev  = Revenue.query.get_or_404(id)
+    rev  = Revenue.query.filter_by(id=id, user_id=session['user_id']).first_or_404()
     data = request.get_json()
     rev.amount      = float(data.get('amount',      rev.amount))
     rev.description = data.get('description', rev.description)
@@ -197,7 +223,7 @@ def update_revenue(id):
 @app.route('/api/revenues/<id>', methods=['DELETE'])
 @login_required
 def delete_revenue(id):
-    rev = Revenue.query.get_or_404(id)
+    rev = Revenue.query.filter_by(id=id, user_id=session['user_id']).first_or_404()
     db.session.delete(rev)
     db.session.commit()
     return '', 204
@@ -209,7 +235,8 @@ def delete_revenue(id):
 @app.route('/api/categories', methods=['GET'])
 @login_required
 def get_categories():
-    cats = Category.query.all()
+    uid = session['user_id']
+    cats = Category.query.filter_by(user_id=uid).all()
     return jsonify([c.to_dict() for c in cats])
 
 
@@ -218,10 +245,11 @@ def get_categories():
 def create_category():
     data = request.get_json()
     cat  = Category(
-        id    = gen_id(),
-        name  = data['name'],
-        color = data.get('color', '#6366f1'),
-        icon  = data.get('icon',  '📦'),
+        id      = gen_id(),
+        name    = data['name'],
+        color   = data.get('color', '#6366f1'),
+        icon    = data.get('icon',  '📦'),
+        user_id = session['user_id'],
     )
     db.session.add(cat)
     db.session.commit()
@@ -231,7 +259,7 @@ def create_category():
 @app.route('/api/categories/<id>', methods=['PUT'])
 @login_required
 def update_category(id):
-    cat  = Category.query.get_or_404(id)
+    cat  = Category.query.filter_by(id=id, user_id=session['user_id']).first_or_404()
     data = request.get_json()
     cat.name  = data.get('name',  cat.name)
     cat.color = data.get('color', cat.color)
@@ -243,7 +271,7 @@ def update_category(id):
 @app.route('/api/categories/<id>', methods=['DELETE'])
 @login_required
 def delete_category(id):
-    cat = Category.query.get_or_404(id)
+    cat = Category.query.filter_by(id=id, user_id=session['user_id']).first_or_404()
     db.session.delete(cat)
     db.session.commit()
     return '', 204
@@ -255,10 +283,10 @@ def delete_category(id):
 @app.route('/api/reset', methods=['POST'])
 @login_required
 def reset_data():
-    Revenue.query.delete()
-    Category.query.delete()
-    for c in DEFAULT_CATEGORIES:
-        db.session.add(Category(**c))
+    uid = session['user_id']
+    Revenue.query.filter_by(user_id=uid).delete()
+    Category.query.filter_by(user_id=uid).delete()
+    _seed_default_categories(uid)
     db.session.commit()
     return '', 204
 
@@ -317,6 +345,8 @@ def create_user():
     user = User(username=username, is_admin=False)
     user.set_password(password)
     db.session.add(user)
+    db.session.flush()
+    _seed_default_categories(user.id)
     db.session.commit()
     return jsonify({'id': user.id, 'username': user.username}), 201
 
