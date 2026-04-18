@@ -67,7 +67,7 @@ function updateOnboardingUI() {
 
   // Bouton passer (masqué à la dernière étape)
   const skipBtn = document.getElementById('obSkipBtn');
-  skipBtn.style.visibility = currentStep === TOTAL_STEPS ? 'hidden' : 'visible';
+  skipBtn.style.display = currentStep === TOTAL_STEPS ? 'none' : 'block';
 
   // Points de navigation
   const dotsEl = document.getElementById('obDots');

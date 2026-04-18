@@ -740,13 +740,15 @@
 
       </div>
 
+      <!-- Bouton Passer (haut droite) -->
+      <button id="obSkipBtn" onclick="closeOnboarding()" data-i18n="ob_btn_skip">Skip</button>
+
       <!-- Navigation -->
       <div id="onboardingNav">
-        <button id="obSkipBtn" onclick="closeOnboarding()" data-i18n="ob_btn_skip">Skip</button>
         <div class="ob-dots" id="obDots"></div>
         <div style="display:flex;gap:0.5rem;">
           <button id="obPrevBtn" onclick="prevOnboardingStep()"><i class="bi bi-arrow-left me-1"></i><span data-i18n="ob_btn_prev">Previous</span></button>
-          <button id="obNextBtn" onclick="nextOnboardingStep()">Suivant <i class="bi bi-arrow-right ms-1"></i></button>
+          <button id="obNextBtn" onclick="nextOnboardingStep()">Next <i class="bi bi-arrow-right ms-1"></i></button>
         </div>
       </div>
 
