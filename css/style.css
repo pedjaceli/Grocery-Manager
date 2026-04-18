@@ -283,18 +283,21 @@ body {
 .stat-card--emerald { border-top: 3px solid var(--emerald) !important; }
 .stat-card--amber   { border-top: 3px solid var(--amber)   !important; }
 .stat-card--cyan    { border-top: 3px solid var(--cyan)    !important; }
+.stat-card--rose    { border-top: 3px solid #f43f5e        !important; }
 
 /* Light backgrounds for stat cards */
 :root .stat-card--indigo  { background: linear-gradient(135deg, #eef0ff 0%, #fff 55%) !important; }
 :root .stat-card--emerald { background: linear-gradient(135deg, #ecfdf5 0%, #fff 55%) !important; }
 :root .stat-card--amber   { background: linear-gradient(135deg, #fffbeb 0%, #fff 55%) !important; }
 :root .stat-card--cyan    { background: linear-gradient(135deg, #ecfeff 0%, #fff 55%) !important; }
+:root .stat-card--rose    { background: linear-gradient(135deg, #fff1f2 0%, #fff 55%) !important; }
 
 /* Dark backgrounds for stat cards */
 [data-theme="dark"] .stat-card--indigo  { background: linear-gradient(135deg, #1e1b4b44 0%, var(--bg-card) 60%) !important; }
 [data-theme="dark"] .stat-card--emerald { background: linear-gradient(135deg, #06513344 0%, var(--bg-card) 60%) !important; }
 [data-theme="dark"] .stat-card--amber   { background: linear-gradient(135deg, #78350f44 0%, var(--bg-card) 60%) !important; }
 [data-theme="dark"] .stat-card--cyan    { background: linear-gradient(135deg, #0e475344 0%, var(--bg-card) 60%) !important; }
+[data-theme="dark"] .stat-card--rose    { background: linear-gradient(135deg, #88172744 0%, var(--bg-card) 60%) !important; }
 
 .stat-icon-wrap {
   width: 44px; height: 44px;
@@ -307,11 +310,13 @@ body {
 .stat-icon-wrap--emerald { background: #d1fae5; color: var(--emerald); }
 .stat-icon-wrap--amber   { background: #fef3c7; color: var(--amber); }
 .stat-icon-wrap--cyan    { background: #cffafe; color: var(--cyan); }
+.stat-icon-wrap--rose    { background: #ffe4e6; color: #f43f5e; }
 
 [data-theme="dark"] .stat-icon-wrap--indigo  { background: #312e81; }
 [data-theme="dark"] .stat-icon-wrap--emerald { background: #064e3b; }
 [data-theme="dark"] .stat-icon-wrap--amber   { background: #78350f; }
 [data-theme="dark"] .stat-icon-wrap--cyan    { background: #0c4a6e; }
+[data-theme="dark"] .stat-icon-wrap--rose    { background: #881727; }
 
 .stat-label {
   font-size: 11px;

@@ -4,8 +4,56 @@
 let expensesTab = 'invoices';
 
 function renderDepenses() {
+  renderExpenseStats();
   renderExpenseCategoryList();
   switchExpensesTab(expensesTab);
+}
+
+function renderExpenseStats() {
+  const now = new Date();
+  const ym  = now.toISOString().slice(0, 7); // "YYYY-MM"
+  const yr  = now.getFullYear().toString();
+
+  let totalMonth = 0, totalYear = 0, grandTotal = 0;
+  let countMonth = 0, countYear = 0, totalCount = 0;
+
+  const addEntry = (amount, date) => {
+    grandTotal += amount;
+    totalCount++;
+    if (date.startsWith(yr)) { totalYear += amount; countYear++; }
+    if (date.startsWith(ym)) { totalMonth += amount; countMonth++; }
+  };
+
+  (db.invoices || []).forEach(inv => {
+    const total = inv.total != null ? inv.total
+      : (inv.items || []).reduce((s, i) => s + i.quantity * i.unit_price, 0);
+    addEntry(total, inv.date || '');
+  });
+
+  (db.expenses || []).forEach(exp => addEntry(exp.amount || 0, exp.date || ''));
+
+  const allDates = [...(db.invoices || []), ...(db.expenses || [])]
+    .map(e => e.date).filter(Boolean).sort();
+  let avgMonthly = 0;
+  if (allDates.length > 0) {
+    const oldest = new Date(allDates[0]);
+    const months = Math.max(1, (now - oldest) / (1000 * 60 * 60 * 24 * 30.44));
+    avgMonthly = grandTotal / months;
+  }
+
+  const set = (id, val, countId, count) => {
+    const el = document.getElementById(id);
+    if (el) el.textContent = fmt(val);
+    if (countId) {
+      const cel = document.getElementById(countId);
+      if (cel) cel.textContent = count;
+    }
+  };
+
+  set('exp-stat-month', totalMonth, 'exp-stat-month-count', countMonth);
+  set('exp-stat-year',  totalYear,  'exp-stat-year-count',  countYear);
+  set('exp-stat-total', grandTotal, 'exp-stat-total-count', totalCount);
+  set('exp-stat-avg',   avgMonthly, null, null);
 }
 
 function switchExpensesTab(tab) {

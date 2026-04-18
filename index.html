@@ -518,6 +518,59 @@
              PAGE : DÉPENSES
         ══════════════════════════════ -->
         <div id="page-depenses" class="page">
+
+          <!-- Stat cards -->
+          <div class="row g-3 mb-4">
+            <div class="col-6 col-xl-3">
+              <div class="card stat-card stat-card--rose h-100">
+                <div class="card-body">
+                  <div class="stat-icon-wrap stat-icon-wrap--rose">
+                    <i class="bi bi-calendar-month"></i>
+                  </div>
+                  <div class="stat-label" data-i18n="stat_this_month">Ce mois</div>
+                  <div class="stat-value" id="exp-stat-month">—</div>
+                  <small class="text-muted" id="exp-stat-month-count">0 entrée(s)</small>
+                </div>
+              </div>
+            </div>
+            <div class="col-6 col-xl-3">
+              <div class="card stat-card stat-card--amber h-100">
+                <div class="card-body">
+                  <div class="stat-icon-wrap stat-icon-wrap--amber">
+                    <i class="bi bi-calendar4-range"></i>
+                  </div>
+                  <div class="stat-label" data-i18n="stat_this_year">Cette année</div>
+                  <div class="stat-value" id="exp-stat-year">—</div>
+                  <small class="text-muted" id="exp-stat-year-count">0 entrée(s)</small>
+                </div>
+              </div>
+            </div>
+            <div class="col-6 col-xl-3">
+              <div class="card stat-card stat-card--indigo h-100">
+                <div class="card-body">
+                  <div class="stat-icon-wrap stat-icon-wrap--indigo">
+                    <i class="bi bi-gem"></i>
+                  </div>
+                  <div class="stat-label" data-i18n="stat_all_time">Total cumulé</div>
+                  <div class="stat-value" id="exp-stat-total">—</div>
+                  <small class="text-muted" id="exp-stat-total-count">0 entrée(s)</small>
+                </div>
+              </div>
+            </div>
+            <div class="col-6 col-xl-3">
+              <div class="card stat-card stat-card--cyan h-100">
+                <div class="card-body">
+                  <div class="stat-icon-wrap stat-icon-wrap--cyan">
+                    <i class="bi bi-graph-down-arrow"></i>
+                  </div>
+                  <div class="stat-label" data-i18n="stat_monthly_avg">Moyenne mensuelle</div>
+                  <div class="stat-value" id="exp-stat-avg">—</div>
+                  <small class="text-muted" data-i18n="stat_last_12">12 derniers mois</small>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <div class="row g-3">
 
             <!-- Main column: tabs -->
