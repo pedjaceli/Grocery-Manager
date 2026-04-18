@@ -1,16 +1,35 @@
 # Revenue Manager
 
-Une application web pour gérer et visualiser tes revenus personnels.
+Une application web pour gérer et visualiser tes revenus personnels, tes dépenses et tes factures.
 
 🔗 **Application en ligne** : [https://revenue-manager.onrender.com](https://revenue-manager.onrender.com)
 
 ## Fonctionnalités
 
+### Revenus
 - Ajouter, modifier et supprimer des revenus
-- Catégoriser les revenus (Salaire, Freelance, Investissements, etc.)
-- Tableau de bord avec statistiques et graphiques
-- Export en PDF
-- Gestion des catégories personnalisées
+- Catégoriser les revenus avec des catégories personnalisées (nom, icône, couleur)
+- Recherche et filtres (catégorie, mois, année)
+- Tableau de bord avec statistiques (ce mois, cette année, total cumulé, moyenne mensuelle)
+- Graphiques : évolution mensuelle, répartition par catégorie, tendance annuelle
+- Export en CSV (compatible Excel) et PDF
+
+### Dépenses
+- **Factures** : créer des factures nommées avec plusieurs articles (produit, quantité, prix unitaire), calcul automatique des totaux
+- **Dépenses simples** : saisie rapide d'une dépense avec montant, description, catégorie, date et notes
+- Catégories de dépenses personnalisées
+
+### Utilisateurs
+- Authentification (inscription / connexion / déconnexion)
+- Réinitialisation de mot de passe via le nom d'utilisateur
+- Données isolées par utilisateur
+- Gestion multi-utilisateurs (admin)
+
+### Interface
+- Bilingue français / anglais (persisté en localStorage)
+- Mode sombre
+- Design responsive (mobile, tablette, bureau)
+- Guide de démarrage interactif (onboarding)
 
 ## Stack technique
 
@@ -19,8 +38,40 @@ Une application web pour gérer et visualiser tes revenus personnels.
 | Backend | Python / Flask |
 | Base de données | PostgreSQL (prod) / SQLite (local) |
 | Frontend | HTML, CSS, JavaScript vanilla |
-| UI | Bootstrap 5 + Chart.js |
+| UI | Bootstrap 5 + Bootstrap Icons + Chart.js |
+| PDF | jsPDF + jsPDF-AutoTable |
 | Hébergement | Render |
+
+## Structure du projet
+
+```
+revenue-manager/
+├── app.py               # Routes Flask + API REST
+├── models.py            # Modèles SQLAlchemy
+├── requirements.txt
+├── index.html           # SPA principale
+├── css/
+│   └── style.css
+├── js/
+│   ├── i18n.js          # Système de traduction FR/EN
+│   ├── db.js            # Cache in-memory + appels API
+│   ├── utils.js         # Helpers (formatage, dates…)
+│   ├── ui.js            # Navigation, modals, toasts
+│   ├── app.js           # Point d'entrée (DOMContentLoaded)
+│   ├── dashboard.js     # Page tableau de bord
+│   ├── revenues.js      # Page revenus
+│   ├── expenses.js      # Page dépenses (factures + dépenses simples)
+│   ├── categories.js    # Page catégories de revenus
+│   ├── charts.js        # Graphiques Chart.js
+│   ├── export.js        # Export CSV / PDF
+│   ├── settings.js      # Paramètres
+│   ├── users.js         # Gestion des utilisateurs
+│   └── onboarding.js    # Guide de démarrage
+└── templates/
+    ├── login.html
+    ├── register.html
+    └── forgot-password.html
+```
 
 ## Lancer en local
 
