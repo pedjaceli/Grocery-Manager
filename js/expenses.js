@@ -46,7 +46,7 @@ function renderExpenseStats() {
     if (el) el.textContent = fmt(val);
     if (countId) {
       const cel = document.getElementById(countId);
-      if (cel) cel.textContent = `${count} ${t('stat_entries')}`;
+      if (cel) cel.textContent = `${count} ${t('stat_expenses')}`;
     }
   };
 
