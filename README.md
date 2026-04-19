@@ -15,13 +15,17 @@ Une application web pour gérer et visualiser tes revenus personnels, tes dépen
 - Export en CSV (compatible Excel) et PDF
 
 ### Dépenses
-- **Factures** : créer des factures nommées avec plusieurs articles (produit, quantité, prix unitaire), calcul automatique des totaux
+- Statistiques en temps réel : ce mois-ci, cette année, total cumulé, moyenne mensuelle (factures + dépenses combinées)
+- **Factures** : créer des factures nommées avec plusieurs articles (produit, quantité, prix total), calcul automatique du prix unitaire et des totaux
+- Autocomplétion des noms de produits à partir des factures existantes
 - **Dépenses simples** : saisie rapide d'une dépense avec montant, description, catégorie, date et notes
-- Catégories de dépenses personnalisées
+- **Par produit** : agrégation de tous les articles achetés avec quantités totales, montants et répartition en pourcentage, filtrable par année/mois
+- Catégories de dépenses personnalisées (nom, icône, couleur)
 
 ### Utilisateurs
 - Authentification (inscription / connexion / déconnexion)
 - Réinitialisation de mot de passe via le nom d'utilisateur
+- Changement de mot de passe depuis les Paramètres (accessible à tous les utilisateurs)
 - Données isolées par utilisateur
 - Gestion multi-utilisateurs (admin)
 
@@ -29,7 +33,9 @@ Une application web pour gérer et visualiser tes revenus personnels, tes dépen
 - Bilingue français / anglais (persisté en localStorage)
 - Mode sombre
 - Design responsive (mobile, tablette, bureau)
-- Guide de démarrage interactif (onboarding)
+- Sélecteur de couleur par pastilles pour les catégories (16 couleurs prédéfinies)
+- Garder l'écran allumé sur mobile/tablette (Web Wake Lock API)
+- Guide de démarrage interactif en 6 étapes (onboarding)
 
 ## Stack technique
 
