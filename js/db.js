@@ -1,7 +1,7 @@
 'use strict';
 
 // ─── In-memory cache (peuplé depuis l'API au démarrage) ───────
-let db = { expenses: [], expenseCategories: [], invoices: [], shoppingLists: [], inventory: [], stores: [], priceRecords: [] };
+let db = { expenses: [], expenseCategories: [], invoices: [], shoppingLists: [], inventory: [], stores: [], priceRecords: [], groceryBudget: 0 };
 
 // ─── Default categories (référence locale pour l'UI) ─────────
 const DEFAULT_CATEGORIES = [
@@ -37,7 +37,7 @@ async function apiFetch(url, options = {}) {
 // ─── Load all data from API ───────────────────────────────────
 async function loadDB() {
   try {
-    const [expenses, expenseCategories, invoices, shoppingLists, inventory, stores, priceRecords] = await Promise.all([
+    const [expenses, expenseCategories, invoices, shoppingLists, inventory, stores, priceRecords, groceryBudget] = await Promise.all([
       apiFetch('/api/expenses'),
       apiFetch('/api/expense-categories'),
       apiFetch('/api/invoices'),
@@ -45,6 +45,7 @@ async function loadDB() {
       apiFetch('/api/inventory'),
       apiFetch('/api/stores'),
       apiFetch('/api/price-records'),
+      apiFetch('/api/grocery-budget'),
     ]);
     db.expenses          = expenses;
     db.expenseCategories = expenseCategories;
@@ -53,10 +54,21 @@ async function loadDB() {
     db.inventory         = inventory;
     db.stores            = stores;
     db.priceRecords      = priceRecords;
+    db.groceryBudget     = groceryBudget.grocery_budget || 0;
   } catch (err) {
     console.error('loadDB error:', err);
     showToast('Impossible de charger les données', 'error');
   }
+}
+
+// ─── Grocery budget ───────────────────────────────────────────
+async function updateGroceryBudget(amount) {
+  const data = await apiFetch('/api/grocery-budget', {
+    method:  'PUT',
+    headers: apiHeaders(),
+    body:    JSON.stringify({ grocery_budget: amount }),
+  });
+  db.groceryBudget = data.grocery_budget || 0;
 }
 
 // ─── Expense Category CRUD ────────────────────────────────────

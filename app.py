@@ -62,6 +62,9 @@ with app.app_context():
         if 'initial_balance' in user_cols:
             conn.execute(text("ALTER TABLE users DROP COLUMN initial_balance"))
             conn.commit()
+        if 'grocery_budget' not in user_cols:
+            conn.execute(text("ALTER TABLE users ADD COLUMN grocery_budget FLOAT DEFAULT 0.0 NOT NULL"))
+            conn.commit()
 
         cat_cols = [c['name'] for c in inspector.get_columns('categories')]
         rev_cols = [c['name'] for c in inspector.get_columns('revenues')]
@@ -335,6 +338,25 @@ def get_me():
     if not user:
         return jsonify({'username': session.get('username', ''), 'is_admin': False}), 200
     return jsonify({'id': user.id, 'username': user.username, 'is_admin': user.is_admin})
+
+@app.route('/api/grocery-budget', methods=['GET'])
+@login_required
+def get_grocery_budget():
+    user = User.query.filter_by(id=session['user_id']).first()
+    return jsonify({'grocery_budget': user.grocery_budget or 0.0})
+
+@app.route('/api/grocery-budget', methods=['PUT'])
+@login_required
+def update_grocery_budget():
+    data = request.get_json()
+    try:
+        amount = float(data.get('grocery_budget', 0))
+    except (TypeError, ValueError):
+        return jsonify({'error': 'Montant invalide.'}), 400
+    user = User.query.filter_by(id=session['user_id']).first()
+    user.grocery_budget = amount
+    db.session.commit()
+    return jsonify({'grocery_budget': user.grocery_budget})
 
 @app.route('/api/me/password', methods=['PUT'])
 @login_required

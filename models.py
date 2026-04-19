@@ -17,6 +17,7 @@ class User(db.Model):
     username        = db.Column(db.String(80),  unique=True, nullable=False)
     password_hash   = db.Column(db.String(256), nullable=False)
     is_admin        = db.Column(db.Boolean,     default=False, nullable=False)
+    grocery_budget  = db.Column(db.Float,       default=0.0,   nullable=False)
     created_at      = db.Column(db.DateTime,    default=lambda: datetime.now(timezone.utc))
 
     def set_password(self, password):

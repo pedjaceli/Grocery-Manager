@@ -1,8 +1,8 @@
 'use strict';
 
-// ─── Grocery budget (localStorage) ───────────────────────
+// ─── Grocery budget (per-user, backend) ───────────────────
 function getGroceryBudget() {
-  return parseFloat(localStorage.getItem('rm-grocery-budget') || '0');
+  return db.groceryBudget || 0;
 }
 
 function showGroceryBudgetEdit() {
@@ -18,12 +18,16 @@ function hideGroceryBudgetEdit() {
   document.getElementById('grocery-budget-view').classList.remove('d-none');
 }
 
-function confirmSaveGroceryBudget() {
+async function confirmSaveGroceryBudget() {
   const amount = parseFloat(document.getElementById('grocery-budget-input').value) || 0;
-  localStorage.setItem('rm-grocery-budget', amount);
-  hideGroceryBudgetEdit();
-  renderDashboard();
-  showToast(t('toast_grocery_budget_saved'), 'success');
+  try {
+    await updateGroceryBudget(amount);
+    hideGroceryBudgetEdit();
+    renderDashboard();
+    showToast(t('toast_grocery_budget_saved'), 'success');
+  } catch (e) {
+    showToast(e.message, 'error');
+  }
 }
 
 function _invoiceTotal(inv) {
