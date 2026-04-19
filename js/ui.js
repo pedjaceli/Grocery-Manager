@@ -32,6 +32,7 @@ function navigate(page) {
     users:      t('nav_users'),
   };
   document.getElementById('page-title').textContent = titles[page] || '';
+  document.getElementById('btn-add-revenue').classList.toggle('d-none', page !== 'revenues');
 
   if (page === 'dashboard')  renderDashboard();
   if (page === 'revenues')   renderRevenueList();
