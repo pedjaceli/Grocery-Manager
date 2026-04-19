@@ -28,6 +28,13 @@ document.addEventListener('DOMContentLoaded', async () => {
   // ── Chargement des données depuis l'API Flask ─────────────
   await loadDB();
 
+  // ── Désactiver l'autocomplétion du navigateur sur tous les champs
+  document.querySelectorAll('input, textarea, select').forEach(el => {
+    if (!el.hasAttribute('autocomplete')) {
+      el.setAttribute('autocomplete', el.type === 'password' ? 'new-password' : 'off');
+    }
+  });
+
   // ── Vider les champs que le navigateur pourrait auto-remplir
   document.querySelectorAll('input[type="text"], input[type="search"]').forEach(el => {
     el.value = '';
