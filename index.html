@@ -847,18 +847,18 @@
         </div>
         <div class="modal-body">
           <div id="loc-list" class="mb-3"></div>
-          <div class="d-flex gap-2 align-items-end flex-wrap">
-            <div style="flex:0 0 80px;">
+          <div class="loc-form-row d-flex gap-2 align-items-end flex-wrap">
+            <div class="loc-form-icon-wrap">
               <label class="form-label small fw-semibold" data-i18n="label_icon">Icône</label>
               <input type="text" id="loc-form-icon" class="form-control text-center" maxlength="2" value="📦" />
             </div>
-            <div style="flex:1; min-width:150px;">
+            <div class="loc-form-name-wrap">
               <label class="form-label small fw-semibold" data-i18n="label_name">Nom</label>
               <input type="text" id="loc-form-name" class="form-control"
                      data-i18n-placeholder="placeholder_loc_name"
                      onkeydown="if(event.key==='Enter') submitLocationForm()" />
             </div>
-            <div class="d-flex gap-1">
+            <div class="loc-form-btns d-flex gap-1">
               <button id="loc-form-submit" class="btn btn-primary" onclick="submitLocationForm()" data-i18n="btn_add">Ajouter</button>
               <button class="btn btn-outline-secondary" onclick="cancelEditLocation()" title="Reset"><i class="bi bi-x-lg"></i></button>
             </div>

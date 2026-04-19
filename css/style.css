@@ -1247,6 +1247,36 @@ input:-webkit-autofill:focus {
 .scan-receipt-bar #scan-receipt-status { flex: 1 1 100%; }
 @media (max-width: 576px) {
   .scan-receipt-bar #scanReceiptBtn { width: 100%; }
-  .scan-receipt-bar { padding: 0.5rem 0.6rem; }
+  .scan-receipt-bar { padding: 0.5rem 0.6rem; gap: 0.35rem; }
+}
+
+/* Location manage modal form row */
+.loc-form-icon-wrap { flex: 0 0 80px; }
+.loc-form-name-wrap { flex: 1; min-width: 150px; }
+@media (max-width: 575.98px) {
+  .loc-form-icon-wrap { flex: 0 0 70px; }
+  .loc-form-name-wrap { flex: 1 1 100%; min-width: 0; }
+  .loc-form-btns { width: 100%; }
+  .loc-form-btns #loc-form-submit { flex: 1; }
+}
+
+/* Invoice modal table tightening on mobile */
+@media (max-width: 575.98px) {
+  #invoiceModal .table th,
+  #invoiceModal .table td { padding: 0.35rem 0.25rem; }
+  #invoiceModal .table th:nth-child(2),
+  #invoiceModal .table td:nth-child(2) { width: 60px !important; }
+  #invoiceModal .table th:nth-child(3),
+  #invoiceModal .table td:nth-child(3) { width: 85px !important; }
+  #invoiceModal .table th:nth-child(4),
+  #invoiceModal .table td:nth-child(4) { width: 34px !important; }
+  #invoiceModal .inv-qty,
+  #invoiceModal .inv-price { font-size: 0.82rem; padding: 0.25rem 0.4rem; }
+}
+
+/* Tighter modal padding on very small screens */
+@media (max-width: 375px) {
+  .modal-body { padding: 1rem 0.75rem; }
+  .modal-header, .modal-footer { padding: 0.75rem; }
 }
 
