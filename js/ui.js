@@ -3,6 +3,42 @@
 // ─── Bootstrap modal instances (set in app.js after DOM ready) ─
 let bsRevenueModal, bsCategoryModal, bsConfirmModal;
 
+// ─── Wake Lock ────────────────────────────────────────────────
+let _wakeLock = null;
+
+async function toggleWakeLock(enabled) {
+  if (!('wakeLock' in navigator)) {
+    showToast(t('settings_wake_lock_err'), 'error');
+    document.getElementById('wakeLockToggle').checked = false;
+    return;
+  }
+  if (enabled) {
+    try {
+      _wakeLock = await navigator.wakeLock.request('screen');
+      _wakeLock.addEventListener('release', () => {
+        _wakeLock = null;
+        const tog = document.getElementById('wakeLockToggle');
+        if (tog) tog.checked = false;
+      });
+    } catch {
+      showToast(t('settings_wake_lock_err'), 'error');
+      document.getElementById('wakeLockToggle').checked = false;
+    }
+  } else {
+    if (_wakeLock) { await _wakeLock.release(); _wakeLock = null; }
+  }
+}
+
+// Réacquérir le wake lock si l'onglet redevient visible
+document.addEventListener('visibilitychange', async () => {
+  const tog = document.getElementById('wakeLockToggle');
+  if (tog && tog.checked && document.visibilityState === 'visible') {
+    try {
+      _wakeLock = await navigator.wakeLock.request('screen');
+    } catch { /* silencieux */ }
+  }
+});
+
 // ─── Current page ─────────────────────────────────────────────
 let currentPage = 'dashboard';
 
