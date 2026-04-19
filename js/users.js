@@ -35,10 +35,17 @@ async function renderUsers() {
     tbody.innerHTML = users.map(u => `
       <tr>
         <td>
-          <i class="bi bi-person-circle me-2 text-muted"></i>
-          <strong>${escHtml(u.username)}</strong>
-          ${u.is_admin ? `<span class="badge bg-warning text-dark ms-2"><i class="bi bi-shield-fill me-1"></i>Admin</span>` : ''}
-          ${u.is_me ? `<span class="badge bg-primary ms-2 d-none d-sm-inline">${t('users_me_badge')}</span>` : ''}
+          <div class="d-flex align-items-center gap-2">
+            <div class="d-flex flex-column align-items-center flex-shrink-0">
+              <i class="bi bi-person-circle fs-5 text-muted"></i>
+              ${u.is_admin ? `<span class="badge bg-warning text-dark mt-1 d-sm-none" style="font-size:10px"><i class="bi bi-shield-fill me-1"></i>Admin</span>` : ''}
+            </div>
+            <div>
+              <strong>${escHtml(u.username)}</strong>
+              ${u.is_admin ? `<span class="badge bg-warning text-dark ms-2 d-none d-sm-inline"><i class="bi bi-shield-fill me-1"></i>Admin</span>` : ''}
+              ${u.is_me ? `<span class="badge bg-primary ms-2 d-none d-sm-inline">${t('users_me_badge')}</span>` : ''}
+            </div>
+          </div>
         </td>
         <td class="text-muted small">${formatDateShort(u.created_at)}</td>
         <td class="text-end">
