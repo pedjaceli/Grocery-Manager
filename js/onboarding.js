@@ -4,15 +4,46 @@
 const TOTAL_STEPS = 7;
 let currentStep   = 1;
 let _onboardingKey = 'rm-onboarding-done';
+let _onboardingUsername = '';
 
 function setOnboardingUser(username) {
+  _onboardingUsername = username || '';
   _onboardingKey = `rm-onboarding-done-${username}`;
 }
 
+function _greeting() {
+  const h = new Date().getHours();
+  if (h < 12) return t('greeting_morning');
+  if (h < 18) return t('greeting_afternoon');
+  return t('greeting_evening');
+}
+
 function checkOnboarding() {
-  if (!localStorage.getItem(_onboardingKey)) {
-    startOnboarding();
+  if (localStorage.getItem(_onboardingKey)) return;
+
+  const titleEl = document.getElementById('welcomeTitle');
+  if (titleEl) {
+    const name = _onboardingUsername ? `, ${_onboardingUsername}` : '';
+    titleEl.textContent = `${_greeting()}${name} 👋`;
   }
+  const modalEl = document.getElementById('welcomeModal');
+  if (!modalEl) { startOnboarding(); return; }
+  const bsWelcome = bootstrap.Modal.getInstance(modalEl) || new bootstrap.Modal(modalEl, { backdrop: 'static', keyboard: false });
+  bsWelcome.show();
+}
+
+function welcomeStartGuide() {
+  const modalEl = document.getElementById('welcomeModal');
+  const bs = bootstrap.Modal.getInstance(modalEl);
+  if (bs) bs.hide();
+  setTimeout(() => startOnboarding(), 300);
+}
+
+function welcomeSkip() {
+  const modalEl = document.getElementById('welcomeModal');
+  const bs = bootstrap.Modal.getInstance(modalEl);
+  if (bs) bs.hide();
+  localStorage.setItem(_onboardingKey, 'true');
 }
 
 function startOnboarding() {

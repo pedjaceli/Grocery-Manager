@@ -215,6 +215,31 @@ const TRANSLATIONS = {
     ob_feat_inventory: 'Inventaire',
     ob_feat_prices:    'Prix',
 
+    ob_step_dashboard_title: 'Étape 1 — Dashboard & Budget épicerie',
+    ob_step_dashboard_text:  'Définis un budget mensuel pour tes courses et suis ta progression en temps réel.',
+    ob_step_dashboard_s1:    'Sur la carte <strong>Budget épicerie</strong>, clique sur <strong>✏️</strong>',
+    ob_step_dashboard_s2:    'Saisis ton <strong>montant mensuel</strong> et valide',
+    ob_step_dashboard_s3:    'La barre <strong>Suivi budget</strong> affiche le % utilisé',
+    ob_step_dashboard_tip:   'La carte <strong>Reste à dépenser</strong> s\'ajuste automatiquement à chaque achat coché dans tes listes de courses.',
+
+    ob_step_inv_s1:          'Personnalise tes <strong>emplacements</strong> via l\'icône ⚙️ (frigo, congélateur, placard, cave…)',
+    ob_step_inv_s2:          'Ajoute un article avec sa <strong>quantité</strong> et sa <strong>date d\'expiration</strong>',
+    ob_step_inv_s3:          'Filtre rapidement par emplacement via les <strong>onglets</strong>',
+
+    ob_step_dep_title:          'Étape 5 — Dépenses & Factures',
+    ob_step_dep_text:           'Enregistre tes achats pour analyser tes habitudes de dépense.',
+    ob_step_dep_invoices:       'Factures',
+    ob_step_dep_invoices_desc:  'Achats détaillés avec plusieurs articles (produit, qté, prix).',
+    ob_step_dep_simple:         'Dépenses simples',
+    ob_step_dep_simple_desc:    'Un montant, une catégorie, une description. Rapide.',
+    ob_step_dep_scan:           '<strong>Nouveau :</strong> dans une facture, clique sur <strong>Scanner le reçu</strong> — l\'IA extrait automatiquement le magasin, la date et tous les articles.',
+
+    ob_step_final_title:    'Tu es prêt !',
+    ob_step_final_charts:   'Consulte la section <strong>Graphiques</strong> pour visualiser tes dépenses par mois et par catégorie.',
+    ob_step_final_export:   'Exporte tes données en <strong>PDF ou CSV</strong> depuis la section Export pour les partager ou les archiver.',
+    ob_step_final_settings: 'Tu peux relancer ce guide à tout moment depuis <strong>Paramètres → Guide de démarrage</strong>.',
+    ob_step_final_tip:      'Bonnes courses et bonne gestion !',
+
     ob_step_budget_title: 'Étape 1 — Budget mensuel',
     ob_step_budget_text:  'Alloue un budget mensuel pour tes courses et suis ton solde en temps réel.',
     ob_step_budget_s1:    'Clique sur <strong>✏️</strong> pour définir ton budget initial',
@@ -282,6 +307,14 @@ const TRANSLATIONS = {
     ob_btn_prev:       'Précédent',
     ob_btn_next:       'Suivant',
     ob_btn_start:      'Commencer',
+
+    // Welcome modal
+    greeting_morning:   'Bonjour',
+    greeting_afternoon: 'Bon après-midi',
+    greeting_evening:   'Bonsoir',
+    welcome_message:    'Grocery Manager t\'aide à gérer tes courses, ton inventaire et ton budget épicerie. Souhaites-tu voir un petit guide pour découvrir les fonctionnalités ?',
+    btn_see_guide:      'Voir le guide',
+    btn_skip_guide:     'Ignorer',
 
     // Expenses / Invoices
     nav_depenses:          'Dépenses',
@@ -674,6 +707,31 @@ const TRANSLATIONS = {
     ob_feat_inventory: 'Inventory',
     ob_feat_prices:    'Prices',
 
+    ob_step_dashboard_title: 'Step 1 — Dashboard & Grocery budget',
+    ob_step_dashboard_text:  'Set a monthly budget for your groceries and track progress in real time.',
+    ob_step_dashboard_s1:    'On the <strong>Grocery budget</strong> card, click <strong>✏️</strong>',
+    ob_step_dashboard_s2:    'Enter your <strong>monthly amount</strong> and confirm',
+    ob_step_dashboard_s3:    'The <strong>Budget tracker</strong> bar shows % used',
+    ob_step_dashboard_tip:   'The <strong>Remaining</strong> card updates automatically as you check off items in your shopping lists.',
+
+    ob_step_inv_s1:          'Customize your <strong>locations</strong> via the ⚙️ icon (fridge, freezer, pantry, cellar…)',
+    ob_step_inv_s2:          'Add an item with its <strong>quantity</strong> and <strong>expiry date</strong>',
+    ob_step_inv_s3:          'Filter quickly by location using the <strong>tabs</strong>',
+
+    ob_step_dep_title:          'Step 5 — Expenses & Invoices',
+    ob_step_dep_text:           'Record your purchases to analyze your spending habits.',
+    ob_step_dep_invoices:       'Invoices',
+    ob_step_dep_invoices_desc:  'Detailed purchases with multiple items (product, qty, price).',
+    ob_step_dep_simple:         'Simple expenses',
+    ob_step_dep_simple_desc:    'An amount, a category, a description. Fast.',
+    ob_step_dep_scan:           '<strong>New:</strong> inside an invoice, click <strong>Scan receipt</strong> — AI automatically extracts the store, date and all items.',
+
+    ob_step_final_title:    'You\'re all set!',
+    ob_step_final_charts:   'Visit the <strong>Charts</strong> section to visualize your spending by month and category.',
+    ob_step_final_export:   'Export your data as <strong>PDF or CSV</strong> from the Export section to share or archive it.',
+    ob_step_final_settings: 'You can relaunch this guide anytime from <strong>Settings → Getting started guide</strong>.',
+    ob_step_final_tip:      'Happy shopping and smart tracking!',
+
     ob_step_budget_title: 'Step 1 — Monthly budget',
     ob_step_budget_text:  'Allocate a monthly grocery budget and track your balance in real time.',
     ob_step_budget_s1:    'Click <strong>✏️</strong> to set your initial budget',
@@ -741,6 +799,14 @@ const TRANSLATIONS = {
     ob_btn_prev:       'Previous',
     ob_btn_next:       'Next',
     ob_btn_start:      'Get started',
+
+    // Welcome modal
+    greeting_morning:   'Good morning',
+    greeting_afternoon: 'Good afternoon',
+    greeting_evening:   'Good evening',
+    welcome_message:    'Grocery Manager helps you manage your shopping, inventory and grocery budget. Would you like a quick tour to discover the features?',
+    btn_see_guide:      'See the guide',
+    btn_skip_guide:     'Skip',
 
     // Expenses / Invoices
     nav_depenses:          'Expenses',

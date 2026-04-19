@@ -1043,6 +1043,25 @@
   </div>
 
   <!-- ══════════════════════════════════════════
+       WELCOME MODAL — Accueil nouvel utilisateur
+  ══════════════════════════════════════════ -->
+  <div class="modal fade" id="welcomeModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+      <div class="modal-content">
+        <div class="modal-body text-center p-4 p-sm-5">
+          <div style="font-size:3rem;line-height:1;margin-bottom:0.75rem;">🛒</div>
+          <h3 id="welcomeTitle" class="mb-3">Bienvenue 👋</h3>
+          <p class="mb-4" data-i18n="welcome_message">Grocery Manager t'aide à gérer tes courses, ton inventaire et ton budget épicerie. Souhaites-tu voir un petit guide pour découvrir les fonctionnalités ?</p>
+          <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
+            <button type="button" class="btn btn-primary" onclick="welcomeStartGuide()" data-i18n="btn_see_guide">Voir le guide</button>
+            <button type="button" class="btn btn-outline-secondary" onclick="welcomeSkip()" data-i18n="btn_skip_guide">Ignorer</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════
        ONBOARDING — Guide de démarrage
   ══════════════════════════════════════════ -->
   <div id="onboardingOverlay">
@@ -1071,81 +1090,87 @@
           </div>
         </div>
 
-        <!-- Étape 2 : Budget mensuel -->
+        <!-- Étape 2 : Dashboard & Budget épicerie -->
         <div class="onboarding-step" data-step="2">
           <div class="ob-icon">💰</div>
-          <h2 data-i18n="ob_step_budget_title">Étape 1 — Budget mensuel</h2>
-          <p data-i18n="ob_step_budget_text">Alloue un budget mensuel et suis ton solde en temps réel.</p>
+          <h2 data-i18n="ob_step_dashboard_title">Étape 1 — Dashboard & Budget épicerie</h2>
+          <p data-i18n="ob_step_dashboard_text">Définis un budget mensuel pour tes courses et suis ta progression en temps réel.</p>
           <div class="ob-steps-list">
-            <div class="ob-step-item"><span class="ob-num">1</span> <span data-i18n-html="ob_step_budget_s1">Clique sur <strong>✏️</strong> pour définir ton budget</span></div>
-            <div class="ob-step-item"><span class="ob-num">2</span> <span data-i18n-html="ob_step_budget_s2">Ajoute des <strong>budgets alloués</strong></span></div>
-            <div class="ob-step-item"><span class="ob-num">3</span> <span data-i18n-html="ob_step_budget_s3">Tes <strong>dépenses</strong> sont déduites automatiquement</span></div>
+            <div class="ob-step-item"><span class="ob-num">1</span> <span data-i18n-html="ob_step_dashboard_s1">Sur la carte <strong>Budget épicerie</strong>, clique sur <strong>✏️</strong></span></div>
+            <div class="ob-step-item"><span class="ob-num">2</span> <span data-i18n-html="ob_step_dashboard_s2">Saisis ton <strong>montant mensuel</strong> et valide</span></div>
+            <div class="ob-step-item"><span class="ob-num">3</span> <span data-i18n-html="ob_step_dashboard_s3">La barre <strong>Suivi budget</strong> affiche le % utilisé</span></div>
           </div>
-          <p class="ob-tip mt-3"><i class="bi bi-lightbulb-fill me-1"></i><span data-i18n-html="ob_step_budget_tip">Le dashboard affiche ton <strong>budget restant</strong> en temps réel.</span></p>
+          <p class="ob-tip mt-3"><i class="bi bi-lightbulb-fill me-1"></i><span data-i18n-html="ob_step_dashboard_tip">La carte <strong>Reste à dépenser</strong> s'ajuste automatiquement à chaque achat coché dans tes listes de courses.</span></p>
         </div>
 
         <!-- Étape 3 : Listes de courses -->
         <div class="onboarding-step" data-step="3">
           <div class="ob-icon">📋</div>
           <h2 data-i18n="ob_step_lists_title">Étape 2 — Listes de courses</h2>
-          <p data-i18n="ob_step_lists_text">Crée des listes, coche les articles en magasin et scanne les codes-barres.</p>
+          <p data-i18n="ob_step_lists_text">Prépare tes listes, scanne les codes-barres et coche les articles au fur et à mesure en magasin.</p>
           <div class="ob-steps-list">
             <div class="ob-step-item"><span class="ob-num">1</span> <span data-i18n-html="ob_step_lists_s1">Crée une <strong>nouvelle liste</strong></span></div>
-            <div class="ob-step-item"><span class="ob-num">2</span> <span data-i18n-html="ob_step_lists_s2">Ajoute des articles <strong>rapidement</strong></span></div>
-            <div class="ob-step-item"><span class="ob-num">3</span> <span data-i18n-html="ob_step_lists_s3"><strong>Scanne</strong> le code-barres</span></div>
-            <div class="ob-step-item"><span class="ob-num">4</span> <span data-i18n-html="ob_step_lists_s4"><strong>Coche</strong> les articles en magasin</span></div>
+            <div class="ob-step-item"><span class="ob-num">2</span> <span data-i18n-html="ob_step_lists_s2">Ajoute des articles (nom, qté, prix)</span></div>
+            <div class="ob-step-item"><span class="ob-num">3</span> <span data-i18n-html="ob_step_lists_s3"><strong>Scanne</strong> un code-barres avec l'appareil photo</span></div>
+            <div class="ob-step-item"><span class="ob-num">4</span> <span data-i18n-html="ob_step_lists_s4"><strong>Coche</strong> les articles achetés en magasin</span></div>
           </div>
-          <p class="ob-tip mt-3"><i class="bi bi-upc-scan me-1"></i><span data-i18n-html="ob_step_lists_tip">Le scanner identifie les produits via <strong>Open Food Facts</strong>.</span></p>
+          <p class="ob-tip mt-3"><i class="bi bi-upc-scan me-1"></i><span data-i18n-html="ob_step_lists_tip">Le scanner reconnaît les produits via <strong>Open Food Facts</strong> et pré-remplit le nom automatiquement.</span></p>
         </div>
 
-        <!-- Étape 4 : Inventaire -->
+        <!-- Étape 4 : Inventaire & emplacements -->
         <div class="onboarding-step" data-step="4">
           <div class="ob-icon">📦</div>
-          <h2 data-i18n="ob_step_inv_title">Étape 3 — Inventaire</h2>
-          <p data-i18n="ob_step_inv_text">Suis ton stock par emplacement et ne rate plus jamais une date d'expiration.</p>
-          <div class="ob-list">
-            <div class="ob-list-item"><span data-i18n="ob_inv_fridge">🧊 Frigo</span></div>
-            <div class="ob-list-item"><span data-i18n="ob_inv_freezer">❄️ Congélateur</span></div>
-            <div class="ob-list-item"><span data-i18n="ob_inv_pantry">🥫 Garde-manger</span></div>
+          <h2 data-i18n="ob_step_inv_title">Étape 3 — Inventaire & emplacements</h2>
+          <p data-i18n="ob_step_inv_text">Suis ton stock par emplacement et sois alerté avant qu'un produit périme.</p>
+          <div class="ob-steps-list">
+            <div class="ob-step-item"><span class="ob-num">1</span> <span data-i18n-html="ob_step_inv_s1">Personnalise tes <strong>emplacements</strong> via l'icône ⚙️ (frigo, congélateur, placard, cave…)</span></div>
+            <div class="ob-step-item"><span class="ob-num">2</span> <span data-i18n-html="ob_step_inv_s2">Ajoute un article avec sa <strong>quantité</strong> et sa <strong>date d'expiration</strong></span></div>
+            <div class="ob-step-item"><span class="ob-num">3</span> <span data-i18n-html="ob_step_inv_s3">Filtre rapidement par emplacement via les <strong>onglets</strong></span></div>
           </div>
-          <p class="ob-tip mt-3"><i class="bi bi-exclamation-triangle-fill me-1"></i><span data-i18n-html="ob_step_inv_tip">Une alerte s'affiche quand un produit expire <strong>dans 3 jours ou moins</strong>.</span></p>
+          <p class="ob-tip mt-3"><i class="bi bi-exclamation-triangle-fill me-1"></i><span data-i18n-html="ob_step_inv_tip">Les produits qui expirent dans <strong>3 jours ou moins</strong> s'affichent en orange, les expirés en rouge.</span></p>
         </div>
 
-        <!-- Étape 5 : Dépenses -->
+        <!-- Étape 5 : Suivi des prix -->
         <div class="onboarding-step" data-step="5">
+          <div class="ob-icon">🏷️</div>
+          <h2 data-i18n="ob_step_prices_title">Étape 4 — Suivi des prix</h2>
+          <p data-i18n="ob_step_prices_text">Compare les prix de tes produits entre magasins pour toujours payer le moins cher.</p>
+          <div class="ob-steps-list">
+            <div class="ob-step-item"><span class="ob-num">1</span> <span data-i18n-html="ob_step_prices_s1">Ajoute tes <strong>magasins</strong> habituels</span></div>
+            <div class="ob-step-item"><span class="ob-num">2</span> <span data-i18n-html="ob_step_prices_s2">Enregistre le <strong>prix</strong> d'un produit dans chaque magasin</span></div>
+            <div class="ob-step-item"><span class="ob-num">3</span> <span data-i18n-html="ob_step_prices_s3">Vois le <strong>meilleur prix</strong> d'un coup d'œil</span></div>
+          </div>
+          <p class="ob-tip mt-3"><i class="bi bi-star-fill me-1"></i><span data-i18n-html="ob_step_prices_tip">L'icône ⭐ indique le magasin le moins cher pour chaque produit.</span></p>
+        </div>
+
+        <!-- Étape 6 : Dépenses & Scan reçu IA -->
+        <div class="onboarding-step" data-step="6">
           <div class="ob-icon">💸</div>
-          <h2 data-i18n="ob_dep_title">Étape 5 — Les Dépenses</h2>
-          <p data-i18n-html="ob_dep_text">La section <strong>Dépenses</strong> te permet de suivre tes sorties d'argent avec deux outils :</p>
+          <h2 data-i18n="ob_step_dep_title">Étape 5 — Dépenses & Factures</h2>
+          <p data-i18n="ob_step_dep_text">Enregistre tes achats pour analyser tes habitudes de dépense.</p>
           <div class="ob-cards">
             <div class="ob-card">
               <i class="bi bi-receipt"></i>
-              <strong data-i18n="ob_dep_inv_title">Factures</strong>
-              <small data-i18n="ob_dep_inv_desc">Crée des factures avec plusieurs articles.</small>
+              <strong data-i18n="ob_step_dep_invoices">Factures</strong>
+              <small data-i18n="ob_step_dep_invoices_desc">Achats détaillés avec plusieurs articles (produit, qté, prix).</small>
+            </div>
+            <div class="ob-card">
+              <i class="bi bi-wallet2"></i>
+              <strong data-i18n="ob_step_dep_simple">Dépenses simples</strong>
+              <small data-i18n="ob_step_dep_simple_desc">Un montant, une catégorie, une description. Rapide.</small>
             </div>
           </div>
-          <p class="ob-tip mt-3"><i class="bi bi-lightbulb-fill me-1"></i><span data-i18n-html="ob_dep_tip">L'onglet <strong>Par produit</strong> agrège tous tes achats par article.</span></p>
-        </div>
-
-        <!-- Étape 6 : Suivi des prix -->
-        <div class="onboarding-step" data-step="6">
-          <div class="ob-icon">🏷️</div>
-          <h2 data-i18n="ob_step_prices_title">Étape 4 — Suivi des prix</h2>
-          <p data-i18n="ob_step_prices_text">Compare les prix de tes produits d'un magasin à l'autre.</p>
-          <div class="ob-steps-list">
-            <div class="ob-step-item"><span class="ob-num">1</span> <span data-i18n-html="ob_step_prices_s1">Ajoute tes <strong>magasins</strong></span></div>
-            <div class="ob-step-item"><span class="ob-num">2</span> <span data-i18n-html="ob_step_prices_s2">Enregistre le <strong>prix</strong> d'un produit</span></div>
-            <div class="ob-step-item"><span class="ob-num">3</span> <span data-i18n-html="ob_step_prices_s3">Vois le <strong>meilleur prix</strong> au premier coup d'œil</span></div>
-          </div>
-          <p class="ob-tip mt-3"><i class="bi bi-star-fill me-1"></i><span data-i18n-html="ob_step_prices_tip">L'icône ⭐ indique le magasin le moins cher pour chaque produit.</span></p>
+          <p class="ob-tip mt-3"><i class="bi bi-camera me-1"></i><span data-i18n-html="ob_step_dep_scan"><strong>Nouveau :</strong> dans une facture, clique sur <strong>Scanner le reçu</strong> — l'IA extrait automatiquement le magasin, la date et tous les articles.</span></p>
         </div>
 
         <!-- Étape 7 : Tu es prêt ! -->
         <div class="onboarding-step" data-step="7">
           <div class="ob-icon">🚀</div>
-          <h2 data-i18n="ob_step4_title">Tu es prêt !</h2>
-          <p data-i18n-html="ob_step4_p1">Tu peux aussi <strong>exporter</strong> tes données en PDF ou CSV depuis la section Export.</p>
-          <p data-i18n-html="ob_step4_p2">Si tu as besoin de revoir ce guide, tu peux le relancer depuis <strong>Paramètres → Guide de démarrage</strong>.</p>
-          <p class="ob-tip"><i class="bi bi-stars me-1"></i><span data-i18n="ob_step4_tip">Bonne gestion de ton épicerie !</span></p>
+          <h2 data-i18n="ob_step_final_title">Tu es prêt !</h2>
+          <p data-i18n-html="ob_step_final_charts">Consulte la section <strong>Graphiques</strong> pour visualiser tes dépenses par mois et par catégorie.</p>
+          <p data-i18n-html="ob_step_final_export">Exporte tes données en <strong>PDF ou CSV</strong> depuis la section Export pour les partager ou les archiver.</p>
+          <p data-i18n-html="ob_step_final_settings">Tu peux relancer ce guide à tout moment depuis <strong>Paramètres → Guide de démarrage</strong>.</p>
+          <p class="ob-tip"><i class="bi bi-stars me-1"></i><span data-i18n="ob_step_final_tip">Bonnes courses et bonne gestion !</span></p>
         </div>
 
       </div>
