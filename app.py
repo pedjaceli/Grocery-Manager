@@ -389,6 +389,20 @@ def delete_user(id):
     user = User.query.get_or_404(id)
     if user.username == session.get('username'):
         return jsonify({'error': 'Tu ne peux pas supprimer ton propre compte.'}), 403
+
+    # Supprimer toutes les données appartenant à l'utilisateur (pas de ON DELETE CASCADE en DB)
+    PriceRecord.query.filter_by(user_id=id).delete(synchronize_session=False)
+    Store.query.filter_by(user_id=id).delete(synchronize_session=False)
+    InventoryItem.query.filter_by(user_id=id).delete(synchronize_session=False)
+    for sl in ShoppingList.query.filter_by(user_id=id).all():
+        db.session.delete(sl)  # cascade vers ShoppingListItem
+    for inv in Invoice.query.filter_by(user_id=id).all():
+        db.session.delete(inv)  # cascade vers InvoiceItem
+    Expense.query.filter_by(user_id=id).delete(synchronize_session=False)
+    ExpenseCategory.query.filter_by(user_id=id).delete(synchronize_session=False)
+    Revenue.query.filter_by(user_id=id).delete(synchronize_session=False)
+    Category.query.filter_by(user_id=id).delete(synchronize_session=False)
+
     db.session.delete(user)
     db.session.commit()
     return '', 204
