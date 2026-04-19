@@ -57,6 +57,9 @@
         <button class="nav-item" onclick="navigate('inventory')" data-page="inventory">
           <i class="bi bi-box-seam-fill"></i> <span data-i18n="nav_inventory">Inventaire</span>
         </button>
+        <button class="nav-item" onclick="navigate('prices')" data-page="prices">
+          <i class="bi bi-tags-fill"></i> <span data-i18n="nav_prices">Suivi des prix</span>
+        </button>
         <button class="nav-item" onclick="navigate('depenses')" data-page="depenses">
           <i class="bi bi-wallet2"></i> <span data-i18n="nav_depenses">Dépenses</span>
         </button>
@@ -574,6 +577,41 @@
         </div>
 
         <!-- ══════════════════════════════
+             PAGE : SUIVI DES PRIX
+        ══════════════════════════════ -->
+        <div id="page-prices" class="page">
+
+          <!-- Header -->
+          <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-3">
+            <div class="d-flex gap-2">
+              <button class="btn btn-sm prices-tab-btn active" data-tab="product"
+                      onclick="switchPricesTab('product')" data-i18n="tab_by_product">Par produit</button>
+              <button class="btn btn-sm prices-tab-btn" data-tab="store"
+                      onclick="switchPricesTab('store')" data-i18n="tab_by_store">Par magasin</button>
+            </div>
+            <div class="d-flex gap-2">
+              <button class="btn btn-sm btn-outline-secondary" onclick="openAddStoreModal()">
+                <i class="bi bi-shop me-1"></i><span data-i18n="btn_add_store">+ Magasin</span>
+              </button>
+              <button class="btn btn-sm btn-primary" onclick="openAddPriceModal()">
+                <i class="bi bi-plus-lg me-1"></i><span data-i18n="btn_add_price">+ Prix</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Search -->
+          <div class="input-group mb-3">
+            <span class="input-group-text"><i class="bi bi-search"></i></span>
+            <input type="search" class="form-control" id="prices-search"
+                   data-i18n-placeholder="product_search_ph"
+                   oninput="onPricesSearch(this.value)">
+          </div>
+
+          <!-- Dynamic content -->
+          <div id="prices-content"></div>
+        </div>
+
+        <!-- ══════════════════════════════
              PAGE : INVENTAIRE
         ══════════════════════════════ -->
         <div id="page-inventory" class="page">
@@ -925,6 +963,79 @@
   </div>
 
   <!-- ═══════════════════════════════════════════════
+     MODAL : PRIX
+═══════════════════════════════════════════════ -->
+  <div class="modal fade" id="priceModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="priceModalTitle"></h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="mb-3">
+            <label class="form-label fw-semibold" data-i18n="label_product_name">Produit</label>
+            <input type="text" id="pf-product" class="form-control"
+                   data-i18n-placeholder="item_name_placeholder">
+            <div id="pe-product" class="invalid-feedback"></div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold" data-i18n="label_store">Magasin</label>
+            <select id="pf-store" class="form-select"></select>
+            <div id="pe-store" class="invalid-feedback"></div>
+          </div>
+          <div class="row g-2 mb-3">
+            <div class="col-6">
+              <label class="form-label fw-semibold" data-i18n="label_price">Prix</label>
+              <input type="number" id="pf-price" class="form-control"
+                     step="0.01" min="0" data-i18n-placeholder="price_placeholder">
+              <div id="pe-price" class="invalid-feedback"></div>
+            </div>
+            <div class="col-6">
+              <label class="form-label fw-semibold" data-i18n="label_unit">Unité</label>
+              <input type="text" id="pf-unit" class="form-control"
+                     data-i18n-placeholder="unit_placeholder">
+            </div>
+          </div>
+          <div class="mb-1">
+            <label class="form-label fw-semibold" data-i18n="label_date">Date</label>
+            <input type="date" id="pf-date" class="form-control">
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" data-bs-dismiss="modal" data-i18n="btn_cancel">Annuler</button>
+          <button class="btn btn-primary" onclick="savePriceModal()" data-i18n="btn_save">Enregistrer</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════
+     MODAL : MAGASIN
+═══════════════════════════════════════════════ -->
+  <div class="modal fade" id="storeModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="storeModalTitle"></h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <label class="form-label fw-semibold" data-i18n="label_store">Magasin</label>
+          <input type="text" id="sf-name" class="form-control"
+                 data-i18n-placeholder="store_name_placeholder"
+                 onkeydown="if(event.key==='Enter') saveStoreModal()">
+          <div id="se-name" class="invalid-feedback"></div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" data-bs-dismiss="modal" data-i18n="btn_cancel">Annuler</button>
+          <button class="btn btn-primary" onclick="saveStoreModal()" data-i18n="btn_save">Enregistrer</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════
      MODAL : INVENTAIRE
 ═══════════════════════════════════════════════ -->
   <div class="modal fade" id="invModal" tabindex="-1" aria-hidden="true">
@@ -1171,106 +1282,99 @@
 
         <!-- Étape 1 : Bienvenue -->
         <div class="onboarding-step active" data-step="1">
-          <div class="ob-icon">🎉</div>
-          <h2 data-i18n="ob_welcome_title">Welcome to Revenue Manager!</h2>
-          <p data-i18n="ob_welcome_text">This app lets you track and analyze all your income in one place. This quick guide will show you how to get started.</p>
+          <div class="ob-icon">🛒</div>
+          <h2 data-i18n="ob_welcome_title">Bienvenue sur Grocery Manager !</h2>
+          <p data-i18n="ob_welcome_text">Cette application t'aide à gérer tes courses, ton inventaire et ton budget épicerie.</p>
           <div class="ob-visual">
             <div class="ob-feature"><i class="bi bi-grid-1x2-fill"></i><span>Dashboard</span></div>
-            <div class="ob-feature"><i class="bi bi-list-ul"></i><span data-i18n="ob_feat_revenues">Revenues</span></div>
-            <div class="ob-feature"><i class="bi bi-bar-chart-line-fill"></i><span data-i18n="ob_feat_charts">Charts</span></div>
-            <div class="ob-feature"><i class="bi bi-tags-fill"></i><span data-i18n="ob_feat_categories">Categories</span></div>
-            <div class="ob-feature"><i class="bi bi-wallet2"></i><span data-i18n="ob_feat_depenses">Expenses</span></div>
+            <div class="ob-feature"><i class="bi bi-piggy-bank-fill"></i><span data-i18n="ob_feat_revenues">Budget</span></div>
+            <div class="ob-feature"><i class="bi bi-list-check"></i><span data-i18n="ob_feat_shopping">Listes</span></div>
+            <div class="ob-feature"><i class="bi bi-box-seam-fill"></i><span data-i18n="ob_feat_inventory">Inventaire</span></div>
+            <div class="ob-feature"><i class="bi bi-wallet2"></i><span data-i18n="ob_feat_depenses">Dépenses</span></div>
+            <div class="ob-feature"><i class="bi bi-tags-fill"></i><span data-i18n="ob_feat_prices">Prix</span></div>
           </div>
         </div>
 
-        <!-- Étape 2 : Catégories -->
+        <!-- Étape 2 : Budget mensuel -->
         <div class="onboarding-step" data-step="2">
-          <div class="ob-icon">🏷️</div>
-          <h2 data-i18n="ob_step1_title">Step 1 — Categories</h2>
-          <p data-i18n="ob_step1_text">Categories help you organize your income. Here are some categories you can use:</p>
-          <div class="ob-list">
-            <div class="ob-list-item"><span>💼</span> <span data-i18n="ob_cat_salary">Salary</span></div>
-            <div class="ob-list-item"><span>💻</span> <span data-i18n="ob_cat_freelance">Freelance</span></div>
-            <div class="ob-list-item"><span>📈</span> <span data-i18n="ob_cat_investment">Investments</span></div>
-            <div class="ob-list-item"><span>🏠</span> <span data-i18n="ob_cat_rental">Rental income</span></div>
+          <div class="ob-icon">💰</div>
+          <h2 data-i18n="ob_step_budget_title">Étape 1 — Budget mensuel</h2>
+          <p data-i18n="ob_step_budget_text">Alloue un budget mensuel et suis ton solde en temps réel.</p>
+          <div class="ob-steps-list">
+            <div class="ob-step-item"><span class="ob-num">1</span> <span data-i18n-html="ob_step_budget_s1">Clique sur <strong>✏️</strong> pour définir ton budget</span></div>
+            <div class="ob-step-item"><span class="ob-num">2</span> <span data-i18n-html="ob_step_budget_s2">Ajoute des <strong>budgets alloués</strong></span></div>
+            <div class="ob-step-item"><span class="ob-num">3</span> <span data-i18n-html="ob_step_budget_s3">Tes <strong>dépenses</strong> sont déduites automatiquement</span></div>
           </div>
-          <p class="ob-tip"><i class="bi bi-lightbulb-fill me-1"></i><span data-i18n-html="ob_step1_tip">You can create your own categories in the <strong>Categories</strong> section.</span></p>
+          <p class="ob-tip mt-3"><i class="bi bi-lightbulb-fill me-1"></i><span data-i18n-html="ob_step_budget_tip">Le dashboard affiche ton <strong>budget restant</strong> en temps réel.</span></p>
         </div>
 
-        <!-- Étape 3 : Ajouter un revenu -->
+        <!-- Étape 3 : Listes de courses -->
         <div class="onboarding-step" data-step="3">
-          <div class="ob-icon">➕</div>
-          <h2 data-i18n="ob_step2_title">Step 2 — Add a revenue</h2>
-          <p class="d-none d-sm-block" data-i18n-html="ob_step2_text">To record a revenue, click the <strong>"Add revenue"</strong> button at the top right.</p>
-          <p class="d-sm-none" data-i18n-html="ob_step2_text_mobile">To record a revenue, tap the <strong>"+"</strong> button at the top right.</p>
+          <div class="ob-icon">📋</div>
+          <h2 data-i18n="ob_step_lists_title">Étape 2 — Listes de courses</h2>
+          <p data-i18n="ob_step_lists_text">Crée des listes, coche les articles en magasin et scanne les codes-barres.</p>
           <div class="ob-steps-list">
-            <div class="ob-step-item"><span class="ob-num">1</span> <span data-i18n-html="ob_step2_s1">Enter the <strong>amount</strong></span></div>
-            <div class="ob-step-item"><span class="ob-num">2</span> <span data-i18n-html="ob_step2_s2">Choose a <strong>category</strong></span></div>
-            <div class="ob-step-item"><span class="ob-num">3</span> <span data-i18n-html="ob_step2_s3">Add a <strong>description</strong></span></div>
-            <div class="ob-step-item"><span class="ob-num">4</span> <span data-i18n-html="ob_step2_s4">Select the <strong>date</strong></span></div>
-            <div class="ob-step-item"><span class="ob-num">5</span> <span data-i18n-html="ob_step2_s5">Click <strong>Save</strong> ✅</span></div>
+            <div class="ob-step-item"><span class="ob-num">1</span> <span data-i18n-html="ob_step_lists_s1">Crée une <strong>nouvelle liste</strong></span></div>
+            <div class="ob-step-item"><span class="ob-num">2</span> <span data-i18n-html="ob_step_lists_s2">Ajoute des articles <strong>rapidement</strong></span></div>
+            <div class="ob-step-item"><span class="ob-num">3</span> <span data-i18n-html="ob_step_lists_s3"><strong>Scanne</strong> le code-barres</span></div>
+            <div class="ob-step-item"><span class="ob-num">4</span> <span data-i18n-html="ob_step_lists_s4"><strong>Coche</strong> les articles en magasin</span></div>
           </div>
+          <p class="ob-tip mt-3"><i class="bi bi-upc-scan me-1"></i><span data-i18n-html="ob_step_lists_tip">Le scanner identifie les produits via <strong>Open Food Facts</strong>.</span></p>
         </div>
 
-        <!-- Étape 4 : Dashboard & Graphiques -->
+        <!-- Étape 4 : Inventaire -->
         <div class="onboarding-step" data-step="4">
-          <div class="ob-icon">📊</div>
-          <h2 data-i18n="ob_step3_title">Step 3 — Analyze your revenues</h2>
-          <p data-i18n="ob_step3_text">Once your revenues are added, two sections help you analyze them:</p>
-          <div class="ob-cards">
-            <div class="ob-card">
-              <i class="bi bi-grid-1x2-fill"></i>
-              <strong>Dashboard</strong>
-              <small data-i18n="ob_dash_desc">Monthly summary, annual total, latest entries</small>
-            </div>
-            <div class="ob-card">
-              <i class="bi bi-bar-chart-line-fill"></i>
-              <strong data-i18n="ob_feat_charts">Charts</strong>
-              <small data-i18n="ob_charts_desc">Monthly trend, breakdown by category</small>
-            </div>
+          <div class="ob-icon">📦</div>
+          <h2 data-i18n="ob_step_inv_title">Étape 3 — Inventaire</h2>
+          <p data-i18n="ob_step_inv_text">Suis ton stock par emplacement et ne rate plus jamais une date d'expiration.</p>
+          <div class="ob-list">
+            <div class="ob-list-item"><span data-i18n="ob_inv_fridge">🧊 Frigo</span></div>
+            <div class="ob-list-item"><span data-i18n="ob_inv_freezer">❄️ Congélateur</span></div>
+            <div class="ob-list-item"><span data-i18n="ob_inv_pantry">🥫 Garde-manger</span></div>
           </div>
+          <p class="ob-tip mt-3"><i class="bi bi-exclamation-triangle-fill me-1"></i><span data-i18n-html="ob_step_inv_tip">Une alerte s'affiche quand un produit expire <strong>dans 3 jours ou moins</strong>.</span></p>
         </div>
 
-        <!-- Étape 5 : Solde bancaire -->
+        <!-- Étape 5 : Dépenses -->
         <div class="onboarding-step" data-step="5">
-          <div class="ob-icon">🏦</div>
-          <h2 data-i18n="ob_balance_title">Étape 4 — Solde du compte</h2>
-          <p data-i18n-html="ob_balance_text">En haut du <strong>Dashboard</strong>, une carte violette affiche ton <strong>solde bancaire simulé</strong> en temps réel.</p>
-          <div class="ob-steps-list">
-            <div class="ob-step-item"><span class="ob-num">1</span> <span data-i18n-html="ob_balance_s1">Clique sur <strong>✏️</strong> pour entrer ton solde actuel</span></div>
-            <div class="ob-step-item"><span class="ob-num">2</span> <span data-i18n-html="ob_balance_s2">Tes <strong>revenus</strong> s'ajoutent automatiquement</span></div>
-            <div class="ob-step-item"><span class="ob-num">3</span> <span data-i18n-html="ob_balance_s3">Tes <strong>dépenses passées</strong> sont déduites</span></div>
-          </div>
-          <p class="ob-tip mt-3"><span data-i18n-html="ob_balance_tip">Seules les dépenses dont la date est <strong>déjà passée</strong> sont prises en compte.</span></p>
-        </div>
-
-        <!-- Étape 6 : Dépenses -->
-        <div class="onboarding-step" data-step="6">
           <div class="ob-icon">💸</div>
-          <h2 data-i18n-html="ob_dep_title">Étape 4 — Les Dépenses</h2>
+          <h2 data-i18n="ob_dep_title">Étape 5 — Les Dépenses</h2>
           <p data-i18n-html="ob_dep_text">La section <strong>Dépenses</strong> te permet de suivre tes sorties d'argent avec deux outils :</p>
           <div class="ob-cards">
             <div class="ob-card">
               <i class="bi bi-receipt"></i>
               <strong data-i18n="ob_dep_inv_title">Factures</strong>
-              <small data-i18n="ob_dep_inv_desc">Crée des factures avec plusieurs articles (produit, quantité, prix total).</small>
+              <small data-i18n="ob_dep_inv_desc">Crée des factures avec plusieurs articles.</small>
             </div>
             <div class="ob-card">
               <i class="bi bi-wallet2"></i>
               <strong data-i18n="ob_dep_exp_title">Dépenses simples</strong>
-              <small data-i18n="ob_dep_exp_desc">Enregistre rapidement une dépense avec montant, catégorie et description.</small>
+              <small data-i18n="ob_dep_exp_desc">Enregistre rapidement une dépense.</small>
             </div>
           </div>
-          <p class="ob-tip mt-3"><span data-i18n-html="ob_dep_tip">L'onglet <strong>Par produit</strong> agrège tous tes achats par article sur la période de ton choix.</span></p>
+          <p class="ob-tip mt-3"><i class="bi bi-lightbulb-fill me-1"></i><span data-i18n-html="ob_dep_tip">L'onglet <strong>Par produit</strong> agrège tous tes achats par article.</span></p>
         </div>
 
-        <!-- Étape 7 : Export -->
+        <!-- Étape 6 : Suivi des prix -->
+        <div class="onboarding-step" data-step="6">
+          <div class="ob-icon">🏷️</div>
+          <h2 data-i18n="ob_step_prices_title">Étape 4 — Suivi des prix</h2>
+          <p data-i18n="ob_step_prices_text">Compare les prix de tes produits d'un magasin à l'autre.</p>
+          <div class="ob-steps-list">
+            <div class="ob-step-item"><span class="ob-num">1</span> <span data-i18n-html="ob_step_prices_s1">Ajoute tes <strong>magasins</strong></span></div>
+            <div class="ob-step-item"><span class="ob-num">2</span> <span data-i18n-html="ob_step_prices_s2">Enregistre le <strong>prix</strong> d'un produit</span></div>
+            <div class="ob-step-item"><span class="ob-num">3</span> <span data-i18n-html="ob_step_prices_s3">Vois le <strong>meilleur prix</strong> au premier coup d'œil</span></div>
+          </div>
+          <p class="ob-tip mt-3"><i class="bi bi-star-fill me-1"></i><span data-i18n-html="ob_step_prices_tip">L'icône ⭐ indique le magasin le moins cher pour chaque produit.</span></p>
+        </div>
+
+        <!-- Étape 7 : Tu es prêt ! -->
         <div class="onboarding-step" data-step="7">
           <div class="ob-icon">🚀</div>
-          <h2 data-i18n="ob_step4_title">You are ready!</h2>
-          <p data-i18n-html="ob_step4_p1">You can also <strong>export</strong> your data as PDF or CSV from the Export section.</p>
-          <p data-i18n-html="ob_step4_p2">If you need to review this guide, you can relaunch it from <strong>Settings → Getting started guide</strong>.</p>
-          <p class="ob-tip"><i class="bi bi-stars me-1"></i><span data-i18n="ob_step4_tip">Enjoy managing your revenues!</span></p>
+          <h2 data-i18n="ob_step4_title">Tu es prêt !</h2>
+          <p data-i18n-html="ob_step4_p1">Tu peux aussi <strong>exporter</strong> tes données en PDF ou CSV depuis la section Export.</p>
+          <p data-i18n-html="ob_step4_p2">Si tu as besoin de revoir ce guide, tu peux le relancer depuis <strong>Paramètres → Guide de démarrage</strong>.</p>
+          <p class="ob-tip"><i class="bi bi-stars me-1"></i><span data-i18n="ob_step4_tip">Bonne gestion de ton épicerie !</span></p>
         </div>
 
       </div>
@@ -1476,6 +1580,7 @@
   <script src="js/settings.js"></script>
   <script src="js/users.js"></script>
   <script src="js/expenses.js"></script>
+  <script src="js/prices.js"></script>
   <script src="js/inventory.js"></script>
   <script src="js/shopping.js"></script>
   <script src="js/onboarding.js"></script>

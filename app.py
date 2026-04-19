@@ -2,7 +2,7 @@ import os
 from functools import wraps
 from flask import Flask, jsonify, request, send_from_directory, session, redirect, render_template
 from sqlalchemy import text, inspect as sa_inspect
-from models import db, Category, Revenue, User, ExpenseCategory, Expense, Invoice, InvoiceItem, ShoppingList, ShoppingListItem, InventoryItem, gen_id
+from models import db, Category, Revenue, User, ExpenseCategory, Expense, Invoice, InvoiceItem, ShoppingList, ShoppingListItem, InventoryItem, Store, PriceRecord, gen_id
 
 # ─── App setup ────────────────────────────────────────────────
 app = Flask(__name__, static_folder='.', static_url_path='')
@@ -709,6 +709,93 @@ def update_inventory_item(id):
 def delete_inventory_item(id):
     item = InventoryItem.query.filter_by(id=id, user_id=session['user_id']).first_or_404()
     db.session.delete(item)
+    db.session.commit()
+    return '', 204
+
+# ─── Stores ───────────────────────────────────────────────────
+@app.route('/api/stores', methods=['GET'])
+@login_required
+def get_stores():
+    stores = Store.query.filter_by(user_id=session['user_id']).order_by(Store.name).all()
+    return jsonify([s.to_dict() for s in stores])
+
+@app.route('/api/stores', methods=['POST'])
+@login_required
+def create_store():
+    data = request.get_json()
+    if not data.get('name', '').strip():
+        return jsonify({'error': 'Name required'}), 400
+    store = Store(name=data['name'].strip(), user_id=session['user_id'])
+    db.session.add(store)
+    db.session.commit()
+    return jsonify(store.to_dict()), 201
+
+@app.route('/api/stores/<id>', methods=['PUT'])
+@login_required
+def update_store(id):
+    store = Store.query.filter_by(id=id, user_id=session['user_id']).first_or_404()
+    data  = request.get_json()
+    if 'name' in data: store.name = data['name'].strip()
+    db.session.commit()
+    return jsonify(store.to_dict())
+
+@app.route('/api/stores/<id>', methods=['DELETE'])
+@login_required
+def delete_store(id):
+    store = Store.query.filter_by(id=id, user_id=session['user_id']).first_or_404()
+    db.session.delete(store)
+    db.session.commit()
+    return '', 204
+
+# ─── Price Records ────────────────────────────────────────────
+@app.route('/api/price-records', methods=['GET'])
+@login_required
+def get_price_records():
+    records = PriceRecord.query.filter_by(user_id=session['user_id'])\
+                  .order_by(PriceRecord.date.desc()).all()
+    return jsonify([r.to_dict() for r in records])
+
+@app.route('/api/price-records', methods=['POST'])
+@login_required
+def create_price_record():
+    data = request.get_json()
+    if not data.get('product_name', '').strip():
+        return jsonify({'error': 'Product name required'}), 400
+    if not data.get('store_id'):
+        return jsonify({'error': 'Store required'}), 400
+    store = Store.query.filter_by(id=data['store_id'], user_id=session['user_id']).first_or_404()
+    rec = PriceRecord(
+        product_name = data['product_name'].strip(),
+        barcode      = data.get('barcode', ''),
+        store_id     = store.id,
+        price        = float(data['price']),
+        unit         = data.get('unit', ''),
+        date         = data.get('date', datetime.now(timezone.utc).strftime('%Y-%m-%d')),
+        user_id      = session['user_id'],
+    )
+    db.session.add(rec)
+    db.session.commit()
+    return jsonify(rec.to_dict()), 201
+
+@app.route('/api/price-records/<id>', methods=['PUT'])
+@login_required
+def update_price_record(id):
+    rec  = PriceRecord.query.filter_by(id=id, user_id=session['user_id']).first_or_404()
+    data = request.get_json()
+    if 'product_name' in data: rec.product_name = data['product_name'].strip()
+    if 'barcode'      in data: rec.barcode       = data['barcode']
+    if 'store_id'     in data: rec.store_id      = data['store_id']
+    if 'price'        in data: rec.price         = float(data['price'])
+    if 'unit'         in data: rec.unit          = data['unit']
+    if 'date'         in data: rec.date          = data['date']
+    db.session.commit()
+    return jsonify(rec.to_dict())
+
+@app.route('/api/price-records/<id>', methods=['DELETE'])
+@login_required
+def delete_price_record(id):
+    rec = PriceRecord.query.filter_by(id=id, user_id=session['user_id']).first_or_404()
+    db.session.delete(rec)
     db.session.commit()
     return '', 204
 

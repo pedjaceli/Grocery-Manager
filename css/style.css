@@ -1192,6 +1192,25 @@ input:-webkit-autofill:focus {
   background: #000;
 }
 
+/* Price tracking tab buttons */
+.prices-tab-btn {
+  border: 1px solid var(--border-color);
+  background: var(--bg-card);
+  color: var(--text-primary);
+  border-radius: 20px;
+  padding: 4px 16px;
+  font-size: 0.82rem;
+  transition: background 0.15s, color 0.15s;
+}
+.prices-tab-btn.active,
+.prices-tab-btn:hover {
+  background: var(--indigo);
+  color: #fff;
+  border-color: var(--indigo);
+}
+.price-product-card { transition: box-shadow 0.15s; }
+.price-product-card:hover { box-shadow: 0 2px 10px rgba(0,0,0,.08); }
+
 /* Inventory location filter buttons */
 .inv-loc-btn {
   border: 1px solid var(--border-color);

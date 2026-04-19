@@ -1,7 +1,7 @@
 'use strict';
 
 // ─── In-memory cache (peuplé depuis l'API au démarrage) ───────
-let db = { revenues: [], categories: [], expenses: [], expenseCategories: [], invoices: [], shoppingLists: [], inventory: [], initialBalance: 0 };
+let db = { revenues: [], categories: [], expenses: [], expenseCategories: [], invoices: [], shoppingLists: [], inventory: [], stores: [], priceRecords: [], initialBalance: 0 };
 
 // ─── Default categories (référence locale pour l'UI) ─────────
 const DEFAULT_CATEGORIES = [
@@ -37,7 +37,7 @@ async function apiFetch(url, options = {}) {
 // ─── Load all data from API ───────────────────────────────────
 async function loadDB() {
   try {
-    const [revenues, categories, expenses, expenseCategories, invoices, shoppingLists, inventory, balance] = await Promise.all([
+    const [revenues, categories, expenses, expenseCategories, invoices, shoppingLists, inventory, stores, priceRecords, balance] = await Promise.all([
       apiFetch('/api/revenues'),
       apiFetch('/api/categories'),
       apiFetch('/api/expenses'),
@@ -45,6 +45,8 @@ async function loadDB() {
       apiFetch('/api/invoices'),
       apiFetch('/api/shopping-lists'),
       apiFetch('/api/inventory'),
+      apiFetch('/api/stores'),
+      apiFetch('/api/price-records'),
       apiFetch('/api/balance'),
     ]);
     db.revenues          = revenues;
@@ -54,6 +56,8 @@ async function loadDB() {
     db.invoices          = invoices;
     db.shoppingLists     = shoppingLists;
     db.inventory         = inventory;
+    db.stores            = stores;
+    db.priceRecords      = priceRecords;
     db.initialBalance    = balance.initial_balance || 0;
   } catch (err) {
     console.error('loadDB error:', err);
@@ -219,6 +223,42 @@ async function deleteShoppingListItem(id) {
   for (const sl of db.shoppingLists) {
     sl.items = sl.items.filter(it => it.id !== id);
   }
+}
+
+// ─── Store CRUD ───────────────────────────────────────────────
+async function addStore(data) {
+  const s = await apiFetch('/api/stores', { method: 'POST', headers: apiHeaders(), body: JSON.stringify(data) });
+  db.stores.push(s);
+  db.stores.sort((a, b) => a.name.localeCompare(b.name));
+  return s;
+}
+async function updateStore(id, updates) {
+  const updated = await apiFetch(`/api/stores/${id}`, { method: 'PUT', headers: apiHeaders(), body: JSON.stringify(updates) });
+  const i = db.stores.findIndex(s => s.id === id);
+  if (i >= 0) db.stores[i] = updated;
+  return updated;
+}
+async function deleteStore(id) {
+  await apiFetch(`/api/stores/${id}`, { method: 'DELETE' });
+  db.stores        = db.stores.filter(s => s.id !== id);
+  db.priceRecords  = db.priceRecords.filter(r => r.store_id !== id);
+}
+
+// ─── Price Record CRUD ────────────────────────────────────────
+async function addPriceRecord(data) {
+  const rec = await apiFetch('/api/price-records', { method: 'POST', headers: apiHeaders(), body: JSON.stringify(data) });
+  db.priceRecords.unshift(rec);
+  return rec;
+}
+async function updatePriceRecord(id, updates) {
+  const updated = await apiFetch(`/api/price-records/${id}`, { method: 'PUT', headers: apiHeaders(), body: JSON.stringify(updates) });
+  const i = db.priceRecords.findIndex(r => r.id === id);
+  if (i >= 0) db.priceRecords[i] = updated;
+  return updated;
+}
+async function deletePriceRecord(id) {
+  await apiFetch(`/api/price-records/${id}`, { method: 'DELETE' });
+  db.priceRecords = db.priceRecords.filter(r => r.id !== id);
 }
 
 // ─── Inventory CRUD ───────────────────────────────────────────

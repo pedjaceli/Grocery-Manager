@@ -228,3 +228,42 @@ class InventoryItem(db.Model):
             'note':        self.note or '',
             'createdAt':   self.created_at.isoformat() if self.created_at else None,
         }
+
+
+class Store(db.Model):
+    __tablename__ = 'stores'
+
+    id         = db.Column(db.String(36),  primary_key=True, default=gen_id)
+    name       = db.Column(db.String(200), nullable=False)
+    user_id    = db.Column(db.String(36),  db.ForeignKey('users.id'), nullable=True)
+    records    = db.relationship('PriceRecord', backref='store', cascade='all, delete-orphan')
+
+    def to_dict(self):
+        return {'id': self.id, 'name': self.name}
+
+
+class PriceRecord(db.Model):
+    __tablename__ = 'price_records'
+
+    id           = db.Column(db.String(36),  primary_key=True, default=gen_id)
+    product_name = db.Column(db.String(200), nullable=False)
+    barcode      = db.Column(db.String(100), default='')
+    store_id     = db.Column(db.String(36),  db.ForeignKey('stores.id'), nullable=False)
+    price        = db.Column(db.Float,       nullable=False)
+    unit         = db.Column(db.String(50),  default='')
+    date         = db.Column(db.String(10),  nullable=False)
+    user_id      = db.Column(db.String(36),  db.ForeignKey('users.id'), nullable=True)
+    created_at   = db.Column(db.DateTime,    default=lambda: datetime.now(timezone.utc))
+
+    def to_dict(self):
+        return {
+            'id':           self.id,
+            'product_name': self.product_name,
+            'barcode':      self.barcode or '',
+            'store_id':     self.store_id,
+            'store_name':   self.store.name if self.store else '',
+            'price':        self.price,
+            'unit':         self.unit or '',
+            'date':         self.date,
+            'createdAt':    self.created_at.isoformat() if self.created_at else None,
+        }

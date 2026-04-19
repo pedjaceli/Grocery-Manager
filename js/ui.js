@@ -2,7 +2,7 @@
 
 // ─── Bootstrap modal instances (set in app.js after DOM ready) ─
 let bsRevenueModal, bsCategoryModal, bsConfirmModal;
-let bsInvModal, bsListModal, bsItemModal, bsScanModal;
+let bsPriceModal, bsStoreModal, bsInvModal, bsListModal, bsItemModal, bsScanModal;
 
 // ─── Wake Lock ────────────────────────────────────────────────
 let _wakeLock = null;
@@ -64,6 +64,7 @@ function navigate(page) {
     charts:     t('nav_charts'),
     categories: t('nav_categories'),
     shopping:   t('nav_shopping'),
+    prices:     t('nav_prices'),
     inventory:  t('nav_inventory'),
     depenses:   t('nav_depenses'),
     export:     t('nav_export'),
@@ -77,6 +78,7 @@ function navigate(page) {
   if (page === 'budget')     renderRevenueList();
   if (page === 'charts')     renderCharts();
   if (page === 'categories') renderCategoryList();
+  if (page === 'prices')     renderPrices();
   if (page === 'inventory')  renderInventory();
   if (page === 'shopping')   renderShoppingLists();
   if (page === 'depenses')   renderDepenses();
