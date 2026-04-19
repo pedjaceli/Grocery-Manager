@@ -965,10 +965,6 @@ input:-webkit-autofill:focus {
     border-radius: 20px;
     z-index: 10;
   }
-  #onboardingCard.ob-last-step #onboardingNav > div {
-    visibility: hidden;
-    pointer-events: none;
-  }
 
   /* Modals : boutons en colonne */
   .modal-footer {
