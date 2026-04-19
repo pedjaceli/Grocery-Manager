@@ -38,7 +38,7 @@ async function renderUsers() {
           <i class="bi bi-person-circle me-2 text-muted"></i>
           <strong>${escHtml(u.username)}</strong>
           ${u.is_admin ? `<span class="badge bg-warning text-dark ms-2"><i class="bi bi-shield-fill me-1"></i>Admin</span>` : ''}
-          ${u.is_me ? `<span class="badge bg-primary ms-2">${t('users_me_badge')}</span>` : ''}
+          ${u.is_me ? `<span class="badge bg-primary ms-2 d-none d-sm-inline">${t('users_me_badge')}</span>` : ''}
         </td>
         <td class="text-muted small">${formatDateShort(u.created_at)}</td>
         <td class="text-end">
