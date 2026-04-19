@@ -502,6 +502,7 @@ body {
   border-radius: 10px;
   font-size: 14px;
   color: var(--text-primary);
+  caret-color: var(--text-primary);
   background: var(--bg-input);
   transition: border-color .15s, box-shadow .15s, background .25s;
 }
