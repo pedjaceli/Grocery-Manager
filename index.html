@@ -42,9 +42,6 @@
         <button class="nav-item active" onclick="navigate('dashboard')" data-page="dashboard">
           <i class="bi bi-grid-1x2-fill"></i> <span data-i18n="nav_dashboard">Dashboard</span>
         </button>
-        <button class="nav-item" onclick="navigate('charts')" data-page="charts">
-          <i class="bi bi-bar-chart-line-fill"></i> <span data-i18n="nav_charts">Graphiques</span>
-        </button>
         <button class="nav-item" onclick="navigate('shopping')" data-page="shopping">
           <i class="bi bi-list-check"></i> <span data-i18n="nav_shopping">Listes de courses</span>
         </button>
@@ -56,6 +53,9 @@
         </button>
         <button class="nav-item" onclick="navigate('depenses')" data-page="depenses">
           <i class="bi bi-wallet2"></i> <span data-i18n="nav_depenses">Dépenses</span>
+        </button>
+        <button class="nav-item" onclick="navigate('charts')" data-page="charts">
+          <i class="bi bi-bar-chart-line-fill"></i> <span data-i18n="nav_charts">Graphiques</span>
         </button>
         <button class="nav-item" onclick="navigate('export')" data-page="export">
           <i class="bi bi-box-arrow-up"></i> <span data-i18n="nav_export">Export</span>
@@ -549,17 +549,8 @@
             </button>
           </div>
 
-          <!-- Location filter tabs -->
-          <div class="d-flex gap-2 mb-3 flex-wrap">
-            <button class="btn btn-sm inv-loc-btn active" data-loc="all"
-                    onclick="setInvLocation('all')" data-i18n="inv_all">Tout</button>
-            <button class="btn btn-sm inv-loc-btn" data-loc="fridge"
-                    onclick="setInvLocation('fridge')">🧊 <span data-i18n="inv_fridge">Frigo</span></button>
-            <button class="btn btn-sm inv-loc-btn" data-loc="freezer"
-                    onclick="setInvLocation('freezer')">❄️ <span data-i18n="inv_freezer">Congélateur</span></button>
-            <button class="btn btn-sm inv-loc-btn" data-loc="pantry"
-                    onclick="setInvLocation('pantry')">🥫 <span data-i18n="inv_pantry">Garde-manger</span></button>
-          </div>
+          <!-- Location filter tabs (dynamic) -->
+          <div id="inv-loc-tabs" class="d-flex gap-2 mb-3 flex-wrap"></div>
 
           <!-- Items table -->
           <div class="card">
@@ -823,20 +814,12 @@
           <div class="row g-2 mb-3">
             <div class="col-6">
               <label class="form-label fw-semibold" data-i18n="label_location">Emplacement</label>
-              <select id="ivf-location" class="form-select">
-                <option value="pantry">🥫 Garde-manger</option>
-                <option value="fridge">🧊 Frigo</option>
-                <option value="freezer">❄️ Congélateur</option>
-              </select>
+              <select id="ivf-location" class="form-select"></select>
             </div>
             <div class="col-6">
               <label class="form-label fw-semibold" data-i18n="label_expiry">Expiration</label>
               <input type="date" id="ivf-expiry" class="form-control">
             </div>
-          </div>
-          <div class="mb-3">
-            <label class="form-label fw-semibold" data-i18n="label_category">Catégorie</label>
-            <select id="ivf-cat" class="form-select"></select>
           </div>
           <div class="mb-1">
             <label class="form-label fw-semibold" data-i18n="col_notes">Notes</label>
@@ -847,6 +830,42 @@
         <div class="modal-footer">
           <button class="btn btn-secondary" data-bs-dismiss="modal" data-i18n="btn_cancel">Annuler</button>
           <button class="btn btn-primary" onclick="saveInvModal()" data-i18n="btn_save">Enregistrer</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════════════════
+       MODAL : GÉRER LES EMPLACEMENTS
+  ═══════════════════════════════════════════════ -->
+  <div class="modal fade" id="invLocModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" data-i18n="inv_manage_locations">Gérer les emplacements</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <div id="loc-list" class="mb-3"></div>
+          <div class="d-flex gap-2 align-items-end flex-wrap">
+            <div style="flex:0 0 80px;">
+              <label class="form-label small fw-semibold" data-i18n="label_icon">Icône</label>
+              <input type="text" id="loc-form-icon" class="form-control text-center" maxlength="2" value="📦" />
+            </div>
+            <div style="flex:1; min-width:150px;">
+              <label class="form-label small fw-semibold" data-i18n="label_name">Nom</label>
+              <input type="text" id="loc-form-name" class="form-control"
+                     data-i18n-placeholder="placeholder_loc_name"
+                     onkeydown="if(event.key==='Enter') submitLocationForm()" />
+            </div>
+            <div class="d-flex gap-1">
+              <button id="loc-form-submit" class="btn btn-primary" onclick="submitLocationForm()" data-i18n="btn_add">Ajouter</button>
+              <button class="btn btn-outline-secondary" onclick="cancelEditLocation()" title="Reset"><i class="bi bi-x-lg"></i></button>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" data-bs-dismiss="modal" data-i18n="btn_close">Fermer</button>
         </div>
       </div>
     </div>

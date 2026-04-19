@@ -1,7 +1,7 @@
 'use strict';
 
 // ─── In-memory cache (peuplé depuis l'API au démarrage) ───────
-let db = { expenses: [], expenseCategories: [], invoices: [], shoppingLists: [], inventory: [], stores: [], priceRecords: [], groceryBudget: 0 };
+let db = { expenses: [], expenseCategories: [], invoices: [], shoppingLists: [], inventory: [], inventoryLocations: [], stores: [], priceRecords: [], groceryBudget: 0 };
 
 // ─── Default categories (référence locale pour l'UI) ─────────
 const DEFAULT_CATEGORIES = [
@@ -37,24 +37,26 @@ async function apiFetch(url, options = {}) {
 // ─── Load all data from API ───────────────────────────────────
 async function loadDB() {
   try {
-    const [expenses, expenseCategories, invoices, shoppingLists, inventory, stores, priceRecords, groceryBudget] = await Promise.all([
+    const [expenses, expenseCategories, invoices, shoppingLists, inventory, inventoryLocations, stores, priceRecords, groceryBudget] = await Promise.all([
       apiFetch('/api/expenses'),
       apiFetch('/api/expense-categories'),
       apiFetch('/api/invoices'),
       apiFetch('/api/shopping-lists'),
       apiFetch('/api/inventory'),
+      apiFetch('/api/inventory-locations'),
       apiFetch('/api/stores'),
       apiFetch('/api/price-records'),
       apiFetch('/api/grocery-budget'),
     ]);
-    db.expenses          = expenses;
-    db.expenseCategories = expenseCategories;
-    db.invoices          = invoices;
-    db.shoppingLists     = shoppingLists;
-    db.inventory         = inventory;
-    db.stores            = stores;
-    db.priceRecords      = priceRecords;
-    db.groceryBudget     = groceryBudget.grocery_budget || 0;
+    db.expenses            = expenses;
+    db.expenseCategories   = expenseCategories;
+    db.invoices            = invoices;
+    db.shoppingLists       = shoppingLists;
+    db.inventory           = inventory;
+    db.inventoryLocations  = inventoryLocations;
+    db.stores              = stores;
+    db.priceRecords        = priceRecords;
+    db.groceryBudget       = groceryBudget.grocery_budget || 0;
   } catch (err) {
     console.error('loadDB error:', err);
     showToast('Impossible de charger les données', 'error');
@@ -218,6 +220,28 @@ async function updateInventoryItem(id, updates) {
 async function deleteInventoryItem(id) {
   await apiFetch(`/api/inventory/${id}`, { method: 'DELETE' });
   db.inventory = db.inventory.filter(it => it.id !== id);
+}
+
+// ─── Inventory Location CRUD ──────────────────────────────────
+async function addInventoryLocation(data) {
+  const loc = await apiFetch('/api/inventory-locations', { method: 'POST', headers: apiHeaders(), body: JSON.stringify(data) });
+  db.inventoryLocations.push(loc);
+  db.inventoryLocations.sort((a, b) => a.name.localeCompare(b.name));
+  return loc;
+}
+async function updateInventoryLocation(id, updates) {
+  const updated = await apiFetch(`/api/inventory-locations/${id}`, { method: 'PUT', headers: apiHeaders(), body: JSON.stringify(updates) });
+  const i = db.inventoryLocations.findIndex(l => l.id === id);
+  if (i >= 0) db.inventoryLocations[i] = updated;
+  db.inventoryLocations.sort((a, b) => a.name.localeCompare(b.name));
+  return updated;
+}
+async function deleteInventoryLocation(id) {
+  await apiFetch(`/api/inventory-locations/${id}`, { method: 'DELETE' });
+  db.inventoryLocations = db.inventoryLocations.filter(l => l.id !== id);
+}
+function getInventoryLocationById(id) {
+  return db.inventoryLocations.find(l => l.id === id) || null;
 }
 
 // ─── Reset all data ───────────────────────────────────────────

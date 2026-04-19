@@ -2,7 +2,7 @@
 
 // ─── Bootstrap modal instances (set in app.js after DOM ready) ─
 let bsConfirmModal;
-let bsPriceModal, bsStoreModal, bsInvModal, bsListModal, bsItemModal, bsScanModal;
+let bsPriceModal, bsStoreModal, bsInvModal, bsInvLocModal, bsListModal, bsItemModal, bsScanModal;
 
 // ─── Wake Lock ────────────────────────────────────────────────
 let _wakeLock = null;

@@ -1205,4 +1205,36 @@ input:-webkit-autofill:focus {
   color: #fff;
   border-color: var(--indigo);
 }
+.inv-loc-btn.inv-loc-manage {
+  padding: 4px 10px;
+  margin-left: auto;
+  color: var(--text-secondary);
+}
+.inv-loc-btn.inv-loc-manage:hover {
+  background: var(--border-color);
+  color: var(--text-primary);
+  border-color: var(--border-color);
+}
+.loc-row:last-child { border-bottom: none !important; }
+#loc-form-icon { text-align: center; }
+
+@media (max-width: 768px) {
+  .inv-loc-btn {
+    padding: 4px 10px;
+    font-size: 0.78rem;
+  }
+}
+@media (max-width: 576px) {
+  .inv-loc-btn {
+    padding: 3px 8px;
+    font-size: 0.75rem;
+  }
+  .inv-loc-btn.inv-loc-manage { margin-left: 0; }
+}
+@media (max-width: 360px) {
+  .inv-loc-btn {
+    padding: 3px 6px;
+    font-size: 0.72rem;
+  }
+}
 

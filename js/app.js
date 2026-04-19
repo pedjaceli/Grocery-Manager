@@ -8,6 +8,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   bsPriceModal      = new bootstrap.Modal(document.getElementById('priceModal'));
   bsStoreModal      = new bootstrap.Modal(document.getElementById('storeModal'));
   bsInvModal        = new bootstrap.Modal(document.getElementById('invModal'));
+  bsInvLocModal     = new bootstrap.Modal(document.getElementById('invLocModal'));
   bsListModal       = new bootstrap.Modal(document.getElementById('listModal'));
   bsItemModal       = new bootstrap.Modal(document.getElementById('itemModal'));
   bsScanModal       = new bootstrap.Modal(document.getElementById('scanModal'));

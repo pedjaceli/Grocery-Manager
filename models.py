@@ -242,6 +242,18 @@ class Store(db.Model):
         return {'id': self.id, 'name': self.name}
 
 
+class InventoryLocation(db.Model):
+    __tablename__ = 'inventory_locations'
+
+    id      = db.Column(db.String(36),  primary_key=True, default=gen_id)
+    name    = db.Column(db.String(100), nullable=False)
+    icon    = db.Column(db.String(10),  nullable=False, default='📦')
+    user_id = db.Column(db.String(36),  db.ForeignKey('users.id'), nullable=True)
+
+    def to_dict(self):
+        return {'id': self.id, 'name': self.name, 'icon': self.icon}
+
+
 class PriceRecord(db.Model):
     __tablename__ = 'price_records'
 

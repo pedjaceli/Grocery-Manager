@@ -1,8 +1,9 @@
 'use strict';
 
 // ─── State ────────────────────────────────────────────────────
-let invLocation   = 'all';   // all | fridge | freezer | pantry
+let invLocation   = 'all';   // 'all' | location id
 let editingInvId  = null;
+let editingLocId  = null;
 
 // ─── Expiry helpers ───────────────────────────────────────────
 function _daysUntilExpiry(dateStr) {
@@ -21,19 +22,20 @@ function _expiryBadge(dateStr) {
   return `<span class="badge bg-success">${fmtDate(dateStr)}</span>`;
 }
 
-function _locationIcon(loc) {
-  return { fridge: '🧊', freezer: '❄️', pantry: '🥫' }[loc] || '📦';
+function _locationLabel(locId) {
+  const loc = getInventoryLocationById(locId);
+  return loc ? `${loc.icon} ${escHtml(loc.name)}` : '📦 —';
 }
 
 // ─── Entry point ──────────────────────────────────────────────
 function renderInventory() {
   _renderStats();
+  _renderLocationTabs();
   _renderItems();
 }
 
 // ─── Stats bar ────────────────────────────────────────────────
 function _renderStats() {
-  const today  = new Date(); today.setHours(0, 0, 0, 0);
   const items  = db.inventory;
   const total   = items.length;
   const expired = items.filter(i => i.expiry_date && _daysUntilExpiry(i.expiry_date) < 0).length;
@@ -43,17 +45,38 @@ function _renderStats() {
   document.getElementById('inv-stat-soon').textContent    = soon;
   document.getElementById('inv-stat-expired').textContent = expired;
 
-  // Alert banner
   const banner = document.getElementById('inv-alert-banner');
   if (expired > 0 || soon > 0) {
     const parts = [];
-    if (expired > 0) parts.push(`<strong>${expired}</strong> produit(s) expiré(s)`);
-    if (soon > 0)    parts.push(`<strong>${soon}</strong> expirent dans 3 jours`);
+    if (expired > 0) parts.push(`<strong>${expired}</strong> ${t('inv_banner_expired')}`);
+    if (soon > 0)    parts.push(`<strong>${soon}</strong> ${t('inv_banner_soon')}`);
     banner.innerHTML = `<i class="bi bi-exclamation-triangle-fill me-2"></i>${parts.join(' · ')}`;
     banner.classList.remove('d-none');
   } else {
     banner.classList.add('d-none');
   }
+}
+
+// ─── Location filter tabs ─────────────────────────────────────
+function _renderLocationTabs() {
+  const container = document.getElementById('inv-loc-tabs');
+  if (!container) return;
+  const locs = db.inventoryLocations || [];
+  const validIds = new Set(locs.map(l => l.id));
+  if (invLocation !== 'all' && !validIds.has(invLocation)) invLocation = 'all';
+
+  const tabs = [
+    `<button class="inv-loc-btn ${invLocation === 'all' ? 'active' : ''}" data-loc="all" onclick="setInvLocation('all')">${t('filter_all')}</button>`,
+    ...locs.map(l => `
+      <button class="inv-loc-btn ${invLocation === l.id ? 'active' : ''}" data-loc="${l.id}" onclick="setInvLocation('${l.id}')">
+        ${l.icon} ${escHtml(l.name)}
+      </button>
+    `),
+  ];
+  container.innerHTML = tabs.join('') + `
+    <button class="inv-loc-btn inv-loc-manage" onclick="openManageLocationsModal()" title="${t('inv_manage_locations')}">
+      <i class="bi bi-gear-fill"></i>
+    </button>`;
 }
 
 // ─── Items list ───────────────────────────────────────────────
@@ -62,7 +85,6 @@ function _renderItems() {
     ? db.inventory
     : db.inventory.filter(i => i.location === invLocation);
 
-  // Sort: expired first, then expiring soon, then by expiry date, then no expiry
   const sorted = [...filtered].sort((a, b) => {
     const da = _daysUntilExpiry(a.expiry_date);
     const db_ = _daysUntilExpiry(b.expiry_date);
@@ -92,7 +114,6 @@ function _renderItems() {
             <th>${t('col_description')}</th>
             <th>${t('label_quantity')}</th>
             <th>${t('label_location')}</th>
-            <th>${t('label_category')}</th>
             <th>${t('label_expiry')}</th>
             <th class="text-end">${t('col_actions')}</th>
           </tr>
@@ -105,12 +126,8 @@ function _renderItems() {
 }
 
 function invRow(item) {
-  const cat     = item.category ? getExpenseCategoryById(item.category) : null;
-  const catHtml = cat
-    ? `<span class="cat-badge" style="background:${cat.color}22;color:${cat.color};">${cat.icon} ${escHtml(cat.name)}</span>`
-    : '<span class="text-muted">—</span>';
   const qty     = `${item.quantity}${item.unit ? ' ' + escHtml(item.unit) : ''}`;
-  const loc     = _locationIcon(item.location) + ' ' + t('inv_' + item.location);
+  const loc     = _locationLabel(item.location);
   const days    = _daysUntilExpiry(item.expiry_date);
   const rowCls  = days !== null && days < 0 ? 'table-danger' : days !== null && days <= 3 ? 'table-warning' : '';
 
@@ -118,7 +135,6 @@ function invRow(item) {
     <td class="fw-semibold">${escHtml(item.name)}${item.note ? `<br><small class="text-muted">${escHtml(item.note)}</small>` : ''}</td>
     <td>${qty}</td>
     <td><small>${loc}</small></td>
-    <td>${catHtml}</td>
     <td>${_expiryBadge(item.expiry_date)}</td>
     <td class="text-end">
       <button class="btn btn-sm btn-outline-secondary py-0 px-1 me-1" onclick="openEditInvModal('${item.id}')">
@@ -131,17 +147,29 @@ function invRow(item) {
   </tr>`;
 }
 
-// ─── Location filter ──────────────────────────────────────────
 function setInvLocation(loc) {
   invLocation = loc;
-  document.querySelectorAll('.inv-loc-btn').forEach(btn => {
-    btn.classList.toggle('active', btn.dataset.loc === loc);
-  });
+  _renderLocationTabs();
   _renderItems();
 }
 
-// ─── Modal: add / edit ────────────────────────────────────────
+// ─── Populate the location <select> in add/edit modal ─────────
+function _populateInvLocationSelect(selectedId) {
+  const sel = document.getElementById('ivf-location');
+  const locs = db.inventoryLocations || [];
+  const fallback = locs[0] ? locs[0].id : '';
+  const effective = locs.some(l => l.id === selectedId) ? selectedId : fallback;
+  sel.innerHTML = locs.map(l =>
+    `<option value="${l.id}" ${l.id === effective ? 'selected' : ''}>${l.icon} ${escHtml(l.name)}</option>`
+  ).join('');
+}
+
+// ─── Modal: add / edit inventory item ─────────────────────────
 function openAddInvModal() {
+  if (!(db.inventoryLocations || []).length) {
+    showToast(t('inv_no_locations'), 'error');
+    return;
+  }
   editingInvId = null;
   document.getElementById('invModalTitle').textContent = t('modal_add_inv');
   document.getElementById('ivf-name').value      = '';
@@ -149,8 +177,7 @@ function openAddInvModal() {
   document.getElementById('ivf-unit').value      = '';
   document.getElementById('ivf-expiry').value    = '';
   document.getElementById('ivf-note').value      = '';
-  document.getElementById('ivf-location').value  = invLocation === 'all' ? 'pantry' : invLocation;
-  _populateInvCatSelect(null);
+  _populateInvLocationSelect(invLocation === 'all' ? null : invLocation);
   bsInvModal.show();
 }
 
@@ -164,17 +191,8 @@ function openEditInvModal(id) {
   document.getElementById('ivf-unit').value      = item.unit || '';
   document.getElementById('ivf-expiry').value    = item.expiry_date || '';
   document.getElementById('ivf-note').value      = item.note || '';
-  document.getElementById('ivf-location').value  = item.location || 'pantry';
-  _populateInvCatSelect(item.category);
+  _populateInvLocationSelect(item.location);
   bsInvModal.show();
-}
-
-function _populateInvCatSelect(selected) {
-  const sel = document.getElementById('ivf-cat');
-  sel.innerHTML = `<option value="">— ${t('label_category')} —</option>` +
-    db.expenseCategories.map(c =>
-      `<option value="${c.id}" ${selected === c.id ? 'selected' : ''}>${c.icon} ${escHtml(c.name)}</option>`
-    ).join('');
 }
 
 async function saveInvModal() {
@@ -185,7 +203,6 @@ async function saveInvModal() {
     name,
     quantity:    parseFloat(document.getElementById('ivf-qty').value) || 1,
     unit:        document.getElementById('ivf-unit').value.trim(),
-    category:    document.getElementById('ivf-cat').value || null,
     location:    document.getElementById('ivf-location').value,
     expiry_date: document.getElementById('ivf-expiry').value || null,
     note:        document.getElementById('ivf-note').value.trim(),
@@ -206,12 +223,96 @@ async function saveInvModal() {
   }
 }
 
-// ─── Delete ───────────────────────────────────────────────────
 function confirmDeleteInv(id) {
   confirmDelete(t('confirm_delete_inv'), async () => {
     try {
       await deleteInventoryItem(id);
       showToast(t('toast_inv_deleted'), 'success');
+      renderInventory();
+    } catch (e) {
+      showToast(e.message, 'error');
+    }
+  });
+}
+
+// ─── Manage locations modal ───────────────────────────────────
+function openManageLocationsModal() {
+  _renderManageLocationsList();
+  editingLocId = null;
+  document.getElementById('loc-form-name').value = '';
+  document.getElementById('loc-form-icon').value = '📦';
+  document.getElementById('loc-form-submit').textContent = t('btn_add');
+  bsInvLocModal.show();
+}
+
+function _renderManageLocationsList() {
+  const container = document.getElementById('loc-list');
+  const locs = db.inventoryLocations || [];
+  if (locs.length === 0) {
+    container.innerHTML = `<p class="text-muted small mb-0">${t('inv_no_locations')}</p>`;
+    return;
+  }
+  container.innerHTML = locs.map(l => `
+    <div class="loc-row d-flex align-items-center justify-content-between py-2 border-bottom">
+      <div class="d-flex align-items-center gap-2">
+        <span style="font-size:1.2rem;">${l.icon}</span>
+        <span class="fw-semibold">${escHtml(l.name)}</span>
+      </div>
+      <div class="d-flex gap-1">
+        <button class="btn btn-sm btn-outline-secondary py-0 px-2" onclick="startEditLocation('${l.id}')">
+          <i class="bi bi-pencil"></i>
+        </button>
+        <button class="btn btn-sm btn-outline-danger py-0 px-2" onclick="confirmDeleteLocation('${l.id}')">
+          <i class="bi bi-trash3"></i>
+        </button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function startEditLocation(id) {
+  const loc = getInventoryLocationById(id);
+  if (!loc) return;
+  editingLocId = id;
+  document.getElementById('loc-form-name').value = loc.name;
+  document.getElementById('loc-form-icon').value = loc.icon;
+  document.getElementById('loc-form-submit').textContent = t('btn_save');
+  document.getElementById('loc-form-name').focus();
+}
+
+function cancelEditLocation() {
+  editingLocId = null;
+  document.getElementById('loc-form-name').value = '';
+  document.getElementById('loc-form-icon').value = '📦';
+  document.getElementById('loc-form-submit').textContent = t('btn_add');
+}
+
+async function submitLocationForm() {
+  const name = document.getElementById('loc-form-name').value.trim();
+  const icon = document.getElementById('loc-form-icon').value.trim() || '📦';
+  if (!name) { document.getElementById('loc-form-name').focus(); return; }
+  try {
+    if (editingLocId) {
+      await updateInventoryLocation(editingLocId, { name, icon });
+      showToast(t('toast_loc_updated'), 'success');
+    } else {
+      await addInventoryLocation({ name, icon });
+      showToast(t('toast_loc_added'), 'success');
+    }
+    cancelEditLocation();
+    _renderManageLocationsList();
+    renderInventory();
+  } catch (e) {
+    showToast(e.message, 'error');
+  }
+}
+
+function confirmDeleteLocation(id) {
+  confirmDelete(t('confirm_delete_location'), async () => {
+    try {
+      await deleteInventoryLocation(id);
+      showToast(t('toast_loc_deleted'), 'success');
+      _renderManageLocationsList();
       renderInventory();
     } catch (e) {
       showToast(e.message, 'error');

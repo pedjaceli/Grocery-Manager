@@ -2,7 +2,7 @@ import os
 from functools import wraps
 from flask import Flask, jsonify, request, send_from_directory, session, redirect, render_template
 from sqlalchemy import text, inspect as sa_inspect
-from models import db, Category, Revenue, User, ExpenseCategory, Expense, Invoice, InvoiceItem, ShoppingList, ShoppingListItem, InventoryItem, Store, PriceRecord, gen_id
+from models import db, Category, Revenue, User, ExpenseCategory, Expense, Invoice, InvoiceItem, ShoppingList, ShoppingListItem, InventoryItem, InventoryLocation, Store, PriceRecord, gen_id
 
 # ─── App setup ────────────────────────────────────────────────
 app = Flask(__name__, static_folder='.', static_url_path='')
@@ -46,6 +46,21 @@ def admin_required(f):
 def _seed_default_categories(user_id):
     for c in DEFAULT_CATEGORIES:
         db.session.add(Category(id=gen_id(), name=c['name'], color=c['color'], icon=c['icon'], user_id=user_id))
+
+DEFAULT_INVENTORY_LOCATIONS = [
+    {'key': 'fridge',  'name': 'Frigo',        'icon': '🧊'},
+    {'key': 'freezer', 'name': 'Congélateur',  'icon': '❄️'},
+    {'key': 'pantry',  'name': 'Garde-manger', 'icon': '🥫'},
+]
+
+def _seed_default_inventory_locations(user_id):
+    """Returns dict {keyword: new_uuid_id} so callers can migrate legacy keyword-based item.location values."""
+    mapping = {}
+    for loc in DEFAULT_INVENTORY_LOCATIONS:
+        new_id = gen_id()
+        db.session.add(InventoryLocation(id=new_id, name=loc['name'], icon=loc['icon'], user_id=user_id))
+        mapping[loc['key']] = new_id
+    return mapping
 
 # ─── Default categories ───────────────────────────────────────
 DEFAULT_CATEGORIES = []
@@ -96,6 +111,19 @@ with app.app_context():
         Category.query.filter_by(user_id=None).update({'user_id': admin.id})
         Revenue.query.filter_by(user_id=None).update({'user_id': admin.id})
         db.session.commit()
+
+    # Seed default inventory locations for every user that has none,
+    # then migrate legacy keyword values in inventory_items.location → new uuid ids
+    for u in User.query.all():
+        has_locations = InventoryLocation.query.filter_by(user_id=u.id).first() is not None
+        if has_locations:
+            continue
+        mapping = _seed_default_inventory_locations(u.id)
+        db.session.flush()
+        for item in InventoryItem.query.filter_by(user_id=u.id).all():
+            if item.location in mapping:
+                item.location = mapping[item.location]
+    db.session.commit()
 
 # ═══════════════════════════════════════════════════════════════
 # STATIC FILES (frontend)
@@ -160,6 +188,7 @@ def register():
     db.session.add(user)
     db.session.flush()  # get user.id before commit
     _seed_default_categories(user.id)
+    _seed_default_inventory_locations(user.id)
     db.session.commit()
     session['logged_in'] = True
     session['username']  = user.username
@@ -402,6 +431,7 @@ def create_user():
     db.session.add(user)
     db.session.flush()
     _seed_default_categories(user.id)
+    _seed_default_inventory_locations(user.id)
     db.session.commit()
     return jsonify({'id': user.id, 'username': user.username}), 201
 
@@ -416,6 +446,7 @@ def delete_user(id):
     PriceRecord.query.filter_by(user_id=id).delete(synchronize_session=False)
     Store.query.filter_by(user_id=id).delete(synchronize_session=False)
     InventoryItem.query.filter_by(user_id=id).delete(synchronize_session=False)
+    InventoryLocation.query.filter_by(user_id=id).delete(synchronize_session=False)
     for sl in ShoppingList.query.filter_by(user_id=id).all():
         db.session.delete(sl)  # cascade vers ShoppingListItem
     for inv in Invoice.query.filter_by(user_id=id).all():
@@ -726,6 +757,54 @@ def update_inventory_item(id):
 def delete_inventory_item(id):
     item = InventoryItem.query.filter_by(id=id, user_id=session['user_id']).first_or_404()
     db.session.delete(item)
+    db.session.commit()
+    return '', 204
+
+# ─── Inventory locations ──────────────────────────────────────
+@app.route('/api/inventory-locations', methods=['GET'])
+@login_required
+def get_inventory_locations():
+    locs = InventoryLocation.query.filter_by(user_id=session['user_id']).order_by(InventoryLocation.name).all()
+    return jsonify([l.to_dict() for l in locs])
+
+@app.route('/api/inventory-locations', methods=['POST'])
+@login_required
+def create_inventory_location():
+    data = request.get_json() or {}
+    name = (data.get('name') or '').strip()
+    if not name:
+        return jsonify({'error': 'Le nom est requis.'}), 400
+    loc = InventoryLocation(
+        id      = gen_id(),
+        name    = name,
+        icon    = data.get('icon') or '📦',
+        user_id = session['user_id'],
+    )
+    db.session.add(loc)
+    db.session.commit()
+    return jsonify(loc.to_dict()), 201
+
+@app.route('/api/inventory-locations/<id>', methods=['PUT'])
+@login_required
+def update_inventory_location(id):
+    loc  = InventoryLocation.query.filter_by(id=id, user_id=session['user_id']).first_or_404()
+    data = request.get_json() or {}
+    name = (data.get('name') or '').strip()
+    if not name:
+        return jsonify({'error': 'Le nom est requis.'}), 400
+    loc.name = name
+    loc.icon = data.get('icon') or loc.icon
+    db.session.commit()
+    return jsonify(loc.to_dict())
+
+@app.route('/api/inventory-locations/<id>', methods=['DELETE'])
+@login_required
+def delete_inventory_location(id):
+    loc = InventoryLocation.query.filter_by(id=id, user_id=session['user_id']).first_or_404()
+    in_use = InventoryItem.query.filter_by(user_id=session['user_id'], location=id).count()
+    if in_use:
+        return jsonify({'error': f'{in_use} produit(s) utilisent cet emplacement. Déplace-les d\'abord.'}), 409
+    db.session.delete(loc)
     db.session.commit()
     return '', 204
 
