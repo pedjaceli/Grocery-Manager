@@ -7,11 +7,11 @@ const MONTHS_FULL = ['Janvier','Février','Mars','Avril','Mai','Juin','Juillet',
 function getMonths()      { return (typeof t === 'function') ? t('months')       : MONTHS_FULL; }
 function getMonthsShort() { return (typeof t === 'function') ? t('months_short') : MONTHS_FR; }
 
-// ─── Currency formatter (€ FR) ────────────────────────────────
+// ─── Currency formatter (CAD) ─────────────────────────────────
 function fmt(amount) {
-  return new Intl.NumberFormat('en-US', {
+  return new Intl.NumberFormat('fr-CA', {
     style: 'currency',
-    currency: 'USD',
+    currency: 'CAD',
   }).format(amount);
 }
 
