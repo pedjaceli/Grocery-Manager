@@ -26,54 +26,6 @@ function confirmSaveGroceryBudget() {
   showToast(t('toast_grocery_budget_saved'), 'success');
 }
 
-function renderBalance() {
-  const today = new Date().toISOString().slice(0, 10);
-
-  const totalExpenses = (db.expenses || [])
-    .filter(e => e.date <= today)
-    .reduce((s, e) => s + e.amount, 0);
-
-  const totalInvoices = (db.invoices || [])
-    .filter(inv => inv.date <= today)
-    .reduce((s, inv) => {
-      const total = inv.total != null ? inv.total
-        : (inv.items || []).reduce((t, i) => t + i.quantity * i.unit_price, 0);
-      return s + total;
-    }, 0);
-
-  const currentBalance = (db.initialBalance || 0) - totalExpenses - totalInvoices;
-
-  document.getElementById('balance-display').textContent = fmt(currentBalance);
-  document.getElementById('balance-detail-text').textContent =
-    `${t('balance_initial')}: ${fmt(db.initialBalance || 0)}` +
-    ` − ${fmt(totalExpenses + totalInvoices)} ${t('balance_expenses')}`;
-}
-
-function showBalanceEdit() {
-  document.getElementById('balance-view').classList.add('d-none');
-  document.getElementById('balance-edit').classList.remove('d-none');
-  const input = document.getElementById('balance-input');
-  input.value = db.initialBalance || 0;
-  input.focus();
-}
-
-function hideBalanceEdit() {
-  document.getElementById('balance-edit').classList.add('d-none');
-  document.getElementById('balance-view').classList.remove('d-none');
-}
-
-async function saveBalance() {
-  const amount = parseFloat(document.getElementById('balance-input').value) || 0;
-  try {
-    await updateInitialBalance(amount);
-    hideBalanceEdit();
-    renderBalance();
-    showToast(t('toast_balance_saved'), 'success');
-  } catch (e) {
-    showToast(e.message, 'error');
-  }
-}
-
 function _invoiceTotal(inv) {
   return inv.total != null ? inv.total
     : (inv.items || []).reduce((t, i) => t + i.quantity * i.unit_price, 0);
@@ -82,8 +34,6 @@ function _invoiceTotal(inv) {
 function renderDashboard() {
   const now       = new Date();
   const thisMonth = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
-
-  renderBalance();
 
   // ── Budget épicerie mensuel ───────────────────────────────
   const budgetMonth = getGroceryBudget();
