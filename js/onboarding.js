@@ -1,7 +1,7 @@
 'use strict';
 
 // ─── Onboarding ───────────────────────────────────────────────
-const TOTAL_STEPS = 6;
+const TOTAL_STEPS = 7;
 let currentStep   = 1;
 let _onboardingKey = 'rm-onboarding-done';
 

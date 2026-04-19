@@ -950,7 +950,8 @@
         <div class="onboarding-step" data-step="3">
           <div class="ob-icon">➕</div>
           <h2 data-i18n="ob_step2_title">Step 2 — Add a revenue</h2>
-          <p data-i18n-html="ob_step2_text">To record a revenue, click the <strong>"Add revenue"</strong> button at the top right.</p>
+          <p class="d-none d-sm-block" data-i18n-html="ob_step2_text">To record a revenue, click the <strong>"Add revenue"</strong> button at the top right.</p>
+          <p class="d-sm-none" data-i18n-html="ob_step2_text_mobile">To record a revenue, tap the <strong>"+"</strong> button at the top right.</p>
           <div class="ob-steps-list">
             <div class="ob-step-item"><span class="ob-num">1</span> <span data-i18n-html="ob_step2_s1">Enter the <strong>amount</strong></span></div>
             <div class="ob-step-item"><span class="ob-num">2</span> <span data-i18n-html="ob_step2_s2">Choose a <strong>category</strong></span></div>
@@ -979,8 +980,21 @@
           </div>
         </div>
 
-        <!-- Étape 5 : Dépenses -->
+        <!-- Étape 5 : Solde bancaire -->
         <div class="onboarding-step" data-step="5">
+          <div class="ob-icon">🏦</div>
+          <h2 data-i18n="ob_balance_title">Étape 4 — Solde du compte</h2>
+          <p data-i18n-html="ob_balance_text">En haut du <strong>Dashboard</strong>, une carte violette affiche ton <strong>solde bancaire simulé</strong> en temps réel.</p>
+          <div class="ob-steps-list">
+            <div class="ob-step-item"><span class="ob-num">1</span> <span data-i18n-html="ob_balance_s1">Clique sur <strong>✏️</strong> pour entrer ton solde actuel</span></div>
+            <div class="ob-step-item"><span class="ob-num">2</span> <span data-i18n-html="ob_balance_s2">Tes <strong>revenus</strong> s'ajoutent automatiquement</span></div>
+            <div class="ob-step-item"><span class="ob-num">3</span> <span data-i18n-html="ob_balance_s3">Tes <strong>dépenses passées</strong> sont déduites</span></div>
+          </div>
+          <p class="ob-tip mt-3"><span data-i18n-html="ob_balance_tip">Seules les dépenses dont la date est <strong>déjà passée</strong> sont prises en compte.</span></p>
+        </div>
+
+        <!-- Étape 6 : Dépenses -->
+        <div class="onboarding-step" data-step="6">
           <div class="ob-icon">💸</div>
           <h2 data-i18n-html="ob_dep_title">Étape 4 — Les Dépenses</h2>
           <p data-i18n-html="ob_dep_text">La section <strong>Dépenses</strong> te permet de suivre tes sorties d'argent avec deux outils :</p>
@@ -999,8 +1013,8 @@
           <p class="ob-tip mt-3"><span data-i18n-html="ob_dep_tip">L'onglet <strong>Par produit</strong> agrège tous tes achats par article sur la période de ton choix.</span></p>
         </div>
 
-        <!-- Étape 6 : Export -->
-        <div class="onboarding-step" data-step="6">
+        <!-- Étape 7 : Export -->
+        <div class="onboarding-step" data-step="7">
           <div class="ob-icon">🚀</div>
           <h2 data-i18n="ob_step4_title">You are ready!</h2>
           <p data-i18n-html="ob_step4_p1">You can also <strong>export</strong> your data as PDF or CSV from the Export section.</p>
