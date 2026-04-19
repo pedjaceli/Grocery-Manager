@@ -257,6 +257,7 @@ body {
   background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: 16px;
+  overflow: hidden;
   box-shadow: var(--shadow);
   transition: box-shadow .2s, transform .2s, background .25s, border-color .25s;
 }
