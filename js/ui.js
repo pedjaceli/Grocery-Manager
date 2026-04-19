@@ -1,7 +1,7 @@
 'use strict';
 
 // ─── Bootstrap modal instances (set in app.js after DOM ready) ─
-let bsRevenueModal, bsCategoryModal, bsConfirmModal;
+let bsRevenueModal, bsConfirmModal;
 let bsPriceModal, bsStoreModal, bsInvModal, bsListModal, bsItemModal, bsScanModal;
 
 // ─── Wake Lock ────────────────────────────────────────────────
@@ -62,7 +62,6 @@ function navigate(page) {
     dashboard:  'Dashboard',
     budget:     t('nav_revenues'),
     charts:     t('nav_charts'),
-    categories: t('nav_categories'),
     shopping:   t('nav_shopping'),
     prices:     t('nav_prices'),
     inventory:  t('nav_inventory'),
@@ -77,7 +76,6 @@ function navigate(page) {
   if (page === 'dashboard')  renderDashboard();
   if (page === 'budget')     renderRevenueList();
   if (page === 'charts')     renderCharts();
-  if (page === 'categories') renderCategoryList();
   if (page === 'prices')     renderPrices();
   if (page === 'inventory')  renderInventory();
   if (page === 'shopping')   renderShoppingLists();
@@ -196,39 +194,6 @@ function setSwatchColor(pickerId, color) {
   );
 }
 
-// ─── Category Modal ───────────────────────────────────────────
-let editingCategoryId = null;
-
-function openAddCategoryModal() {
-  editingCategoryId = null;
-  document.getElementById('categoryModalTitle').textContent = t('modal_add_category');
-  document.getElementById('categorySubmitBtn').textContent  = t('btn_create');
-  document.getElementById('cf-name').value = '';
-  document.getElementById('cf-icon').value = '💼';
-  setSwatchColor('cf-swatch', '#6366f1');
-  clearCategoryErrors();
-  bsCategoryModal.show();
-}
-
-function openEditCategoryModal(id) {
-  const c = db.categories.find(x => x.id === id);
-  if (!c) return;
-  editingCategoryId = id;
-  document.getElementById('categoryModalTitle').textContent = t('modal_edit_category');
-  document.getElementById('categorySubmitBtn').textContent  = t('btn_update');
-  document.getElementById('cf-name').value = c.name;
-  document.getElementById('cf-icon').value = c.icon;
-  setSwatchColor('cf-swatch', c.color);
-  clearCategoryErrors();
-  bsCategoryModal.show();
-}
-
-function clearCategoryErrors() {
-  const input = document.getElementById('cf-name');
-  const err   = document.getElementById('ce-name');
-  input.classList.remove('is-invalid');
-  err.textContent = '';
-}
 
 // ─── Confirm Delete ───────────────────────────────────────────
 function confirmDelete(message, onConfirm) {

@@ -48,9 +48,6 @@
         <button class="nav-item" onclick="navigate('charts')" data-page="charts">
           <i class="bi bi-bar-chart-line-fill"></i> <span data-i18n="nav_charts">Graphiques</span>
         </button>
-        <button class="nav-item" onclick="navigate('categories')" data-page="categories">
-          <i class="bi bi-tags-fill"></i> <span data-i18n="nav_categories">Catégories</span>
-        </button>
         <button class="nav-item" onclick="navigate('shopping')" data-page="shopping">
           <i class="bi bi-list-check"></i> <span data-i18n="nav_shopping">Listes de courses</span>
         </button>
@@ -145,12 +142,28 @@
             <div class="col-6 col-xl-3">
               <div class="card stat-card stat-card--indigo h-100">
                 <div class="card-body">
-                  <div class="stat-icon-wrap stat-icon-wrap--indigo">
-                    <i class="bi bi-piggy-bank-fill"></i>
+                  <div class="d-flex align-items-start justify-content-between">
+                    <div class="stat-icon-wrap stat-icon-wrap--indigo">
+                      <i class="bi bi-cart-check-fill"></i>
+                    </div>
+                    <button class="btn btn-link btn-sm p-0 text-muted" onclick="showGroceryBudgetEdit()" title="Modifier">
+                      <i class="bi bi-pencil-fill small"></i>
+                    </button>
                   </div>
-                  <div class="stat-label" data-i18n="stat_budget_month">Budget alloué</div>
-                  <div class="stat-value" id="stat-month">—</div>
-                  <small class="text-muted" id="stat-month-count">0 budget(s)</small>
+                  <div class="stat-label mt-1" data-i18n="stat_budget_month">Budget épicerie</div>
+                  <div id="grocery-budget-view">
+                    <div class="stat-value" id="stat-month">—</div>
+                    <small class="text-muted" id="stat-month-sub" data-i18n="stat_set_budget">Cliquer pour définir</small>
+                  </div>
+                  <div id="grocery-budget-edit" class="d-none mt-2">
+                    <div class="d-flex gap-1">
+                      <input type="number" id="grocery-budget-input" class="form-control form-control-sm"
+                             step="0.01" min="0" placeholder="400.00"
+                             onkeydown="if(event.key==='Enter') confirmSaveGroceryBudget()" />
+                      <button class="btn btn-sm balance-save-btn fw-semibold" onclick="confirmSaveGroceryBudget()">✓</button>
+                      <button class="btn btn-sm balance-edit-btn" onclick="hideGroceryBudgetEdit()"><i class="bi bi-x-lg"></i></button>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -160,9 +173,9 @@
                   <div class="stat-icon-wrap stat-icon-wrap--rose">
                     <i class="bi bi-cart-fill"></i>
                   </div>
-                  <div class="stat-label" data-i18n="stat_spent_month">Dépenses</div>
+                  <div class="stat-label" data-i18n="stat_spent_month">Courses ce mois</div>
                   <div class="stat-value" id="stat-spent">—</div>
-                  <small class="text-muted" id="stat-spent-count">0 dépense(s)</small>
+                  <small class="text-muted" id="stat-spent-count">0 liste(s)</small>
                 </div>
               </div>
             </div>
@@ -188,6 +201,20 @@
                   <div class="stat-value" id="stat-avg">—</div>
                   <small class="text-muted" data-i18n="stat_last_12">12 derniers mois</small>
                 </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Grocery budget progress bar -->
+          <div class="card mb-4">
+            <div class="card-body py-3">
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <span class="fw-semibold small" data-i18n="stat_grocery_progress">Suivi budget épicerie</span>
+                <small class="text-muted" id="grocery-budget-pct"></small>
+              </div>
+              <div class="progress" style="height:8px;">
+                <div class="progress-bar bg-success" id="grocery-budget-bar" role="progressbar"
+                     style="width:0%;" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
               </div>
             </div>
           </div>
@@ -289,35 +316,6 @@
           <div class="card">
             <div class="card-header fw-semibold" data-i18n="chart_yearly">Évolution annuelle</div>
             <div class="card-body"><canvas id="chart-yearly"></canvas></div>
-          </div>
-        </div>
-
-        <!-- ══════════════════════════════
-           PAGE : CATÉGORIES
-      ══════════════════════════════ -->
-        <div id="page-categories" class="page">
-          <div class="row g-3">
-            <div class="col-lg-8">
-              <div class="card">
-                <div class="card-header d-flex justify-content-between align-items-center">
-                  <span class="fw-semibold" data-i18n="section_categories">Mes catégories</span>
-                  <button class="btn btn-primary btn-sm" onclick="openAddCategoryModal()">
-                    <i class="bi bi-plus-lg me-1"></i> <span data-i18n="btn_new_category">Nouvelle catégorie</span>
-                  </button>
-                </div>
-                <div class="card-body p-0" id="category-list"></div>
-              </div>
-            </div>
-            <div class="col-lg-4">
-              <div class="card">
-                <div class="card-header fw-semibold"><i class="bi bi-info-circle me-1"></i> <span data-i18n="cat_info_title">Info</span></div>
-                <div class="card-body text-muted small lh-lg">
-                  <span data-i18n="cat_info_text1">Les catégories permettent de classer vos revenus et d'analyser leur répartition dans les graphiques.</span>
-                  <hr class="my-2" />
-                  <span data-i18n="cat_info_text2">Une catégorie utilisée par un revenu ne peut <strong>pas</strong> être supprimée.</span>
-                </div>
-              </div>
-            </div>
           </div>
         </div>
 
@@ -904,59 +902,6 @@
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" data-i18n="btn_cancel">Annuler</button>
           <button type="button" class="btn btn-primary" id="revenueSubmitBtn"
             onclick="submitRevenue()" data-i18n="btn_save">Enregistrer</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- ═══════════════════════════════════════════════
-     MODAL : CATÉGORIE
-═══════════════════════════════════════════════ -->
-  <div class="modal fade" id="categoryModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-sm">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="categoryModalTitle" data-i18n="modal_add_category">Nouvelle catégorie</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-        </div>
-        <div class="modal-body">
-          <div class="mb-3">
-            <label class="form-label fw-semibold small"><span data-i18n="label_cat_name">Nom</span> <span class="text-danger">*</span></label>
-            <input type="text" class="form-control" id="cf-name" placeholder="Ex: Dividendes, Bonus…" data-i18n-placeholder="cat_name_placeholder" />
-            <div class="invalid-feedback" id="ce-name"></div>
-          </div>
-          <div class="row g-2">
-            <div class="col-6">
-              <label class="form-label fw-semibold small" data-i18n="label_cat_icon">Icône (emoji)</label>
-              <input type="text" class="form-control text-center fs-5" id="cf-icon" placeholder="💼" maxlength="4" />
-            </div>
-            <div class="col-6">
-              <label class="form-label fw-semibold small" data-i18n="label_cat_color">Couleur</label>
-              <input type="hidden" id="cf-color" value="#6366f1" />
-              <div class="swatch-picker mt-1" id="cf-swatch">
-                <button type="button" class="swatch active" style="--c:#6366f1" data-color="#6366f1" onclick="setSwatchColor('cf-swatch','#6366f1')"></button>
-                <button type="button" class="swatch" style="--c:#8b5cf6" data-color="#8b5cf6" onclick="setSwatchColor('cf-swatch','#8b5cf6')"></button>
-                <button type="button" class="swatch" style="--c:#ec4899" data-color="#ec4899" onclick="setSwatchColor('cf-swatch','#ec4899')"></button>
-                <button type="button" class="swatch" style="--c:#f43f5e" data-color="#f43f5e" onclick="setSwatchColor('cf-swatch','#f43f5e')"></button>
-                <button type="button" class="swatch" style="--c:#ef4444" data-color="#ef4444" onclick="setSwatchColor('cf-swatch','#ef4444')"></button>
-                <button type="button" class="swatch" style="--c:#f97316" data-color="#f97316" onclick="setSwatchColor('cf-swatch','#f97316')"></button>
-                <button type="button" class="swatch" style="--c:#f59e0b" data-color="#f59e0b" onclick="setSwatchColor('cf-swatch','#f59e0b')"></button>
-                <button type="button" class="swatch" style="--c:#eab308" data-color="#eab308" onclick="setSwatchColor('cf-swatch','#eab308')"></button>
-                <button type="button" class="swatch" style="--c:#84cc16" data-color="#84cc16" onclick="setSwatchColor('cf-swatch','#84cc16')"></button>
-                <button type="button" class="swatch" style="--c:#22c55e" data-color="#22c55e" onclick="setSwatchColor('cf-swatch','#22c55e')"></button>
-                <button type="button" class="swatch" style="--c:#10b981" data-color="#10b981" onclick="setSwatchColor('cf-swatch','#10b981')"></button>
-                <button type="button" class="swatch" style="--c:#14b8a6" data-color="#14b8a6" onclick="setSwatchColor('cf-swatch','#14b8a6')"></button>
-                <button type="button" class="swatch" style="--c:#06b6d4" data-color="#06b6d4" onclick="setSwatchColor('cf-swatch','#06b6d4')"></button>
-                <button type="button" class="swatch" style="--c:#0ea5e9" data-color="#0ea5e9" onclick="setSwatchColor('cf-swatch','#0ea5e9')"></button>
-                <button type="button" class="swatch" style="--c:#3b82f6" data-color="#3b82f6" onclick="setSwatchColor('cf-swatch','#3b82f6')"></button>
-                <button type="button" class="swatch" style="--c:#64748b" data-color="#64748b" onclick="setSwatchColor('cf-swatch','#64748b')"></button>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" data-i18n="btn_cancel">Annuler</button>
-          <button type="button" class="btn btn-primary" id="categorySubmitBtn" onclick="submitCategory()" data-i18n="btn_create">Créer</button>
         </div>
       </div>
     </div>
@@ -1575,7 +1520,6 @@
   <script src="js/dashboard.js"></script>
   <script src="js/revenues.js"></script>
   <script src="js/charts.js"></script>
-  <script src="js/categories.js"></script>
   <script src="js/export.js"></script>
   <script src="js/settings.js"></script>
   <script src="js/users.js"></script>

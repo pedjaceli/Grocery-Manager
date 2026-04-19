@@ -1038,8 +1038,16 @@ input:-webkit-autofill:focus {
   .page-content { padding: 12px; }
   .topbar       { padding: 0 12px; }
 
-  /* Stat cards : 2 par ligne */
-  .stat-value { font-size: 22px; }
+  /* Stat cards : 2 par ligne, padding réduit */
+  .stat-value { font-size: 20px; }
+  .stat-card .card-body { padding: 14px 12px 12px; }
+  .stat-icon-wrap { width: 36px; height: 36px; border-radius: 9px; font-size: 16px; margin-bottom: 10px; }
+
+  /* Inline edit budget épicerie dans col-6 */
+  #grocery-budget-edit .d-flex { flex-wrap: nowrap; }
+  #grocery-budget-edit .form-control-sm { min-width: 0; font-size: 12px; padding: 4px 6px; }
+  #grocery-budget-edit .balance-save-btn,
+  #grocery-budget-edit .balance-edit-btn { padding: 4px 7px; font-size: 12px; flex-shrink: 0; }
 
   /* Tableaux : scroll horizontal */
   .table-responsive-mobile {
@@ -1058,7 +1066,13 @@ input:-webkit-autofill:focus {
   .card-header { padding: 12px 14px; }
 }
 
-/* Tablette portrait : même sécurité de scroll */
+/* Tablette portrait */
+@media (min-width: 576px) and (max-width: 767.98px) {
+  /* Stat cards encore en col-6 : padding modéré */
+  .stat-card .card-body { padding: 18px 16px 14px; }
+  .stat-value { font-size: 24px; }
+}
+
 @media (min-width: 576px) and (max-width: 767.98px) {
   #onboardingCard {
     display: flex;

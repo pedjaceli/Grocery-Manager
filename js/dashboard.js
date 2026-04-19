@@ -1,5 +1,31 @@
 'use strict';
 
+// ─── Grocery budget (localStorage) ───────────────────────
+function getGroceryBudget() {
+  return parseFloat(localStorage.getItem('rm-grocery-budget') || '0');
+}
+
+function showGroceryBudgetEdit() {
+  document.getElementById('grocery-budget-view').classList.add('d-none');
+  document.getElementById('grocery-budget-edit').classList.remove('d-none');
+  const input = document.getElementById('grocery-budget-input');
+  input.value = getGroceryBudget() || '';
+  input.focus();
+}
+
+function hideGroceryBudgetEdit() {
+  document.getElementById('grocery-budget-edit').classList.add('d-none');
+  document.getElementById('grocery-budget-view').classList.remove('d-none');
+}
+
+function confirmSaveGroceryBudget() {
+  const amount = parseFloat(document.getElementById('grocery-budget-input').value) || 0;
+  localStorage.setItem('rm-grocery-budget', amount);
+  hideGroceryBudgetEdit();
+  renderDashboard();
+  showToast(t('toast_grocery_budget_saved'), 'success');
+}
+
 function renderBalance() {
   const today = new Date().toISOString().slice(0, 10);
 
@@ -62,50 +88,66 @@ function renderDashboard() {
 
   renderBalance();
 
-  // ── Budget alloué ce mois ─────────────────────────────────
-  const monthRevs   = db.revenues.filter(r => r.date.startsWith(thisMonth));
-  const budgetMonth = monthRevs.reduce((s, r) => s + r.amount, 0);
-  document.getElementById('stat-month').textContent       = fmt(budgetMonth);
-  document.getElementById('stat-month-count').textContent = `${monthRevs.length} ${t('stat_entries')}`;
+  // ── Budget épicerie mensuel ───────────────────────────────
+  const budgetMonth = getGroceryBudget();
+  document.getElementById('stat-month').textContent     = budgetMonth > 0 ? fmt(budgetMonth) : '—';
+  document.getElementById('stat-month-sub').textContent = t(budgetMonth > 0 ? 'stat_budget_month' : 'stat_set_budget');
 
-  // ── Dépenses ce mois ──────────────────────────────────────
-  const monthExpenses = (db.expenses || []).filter(e => e.date.startsWith(thisMonth));
-  const monthInvoices = (db.invoices || []).filter(inv => inv.date.startsWith(thisMonth));
-  const spentMonth    = monthExpenses.reduce((s, e) => s + e.amount, 0)
-                      + monthInvoices.reduce((s, inv) => s + _invoiceTotal(inv), 0);
-  const spentCount    = monthExpenses.length + monthInvoices.length;
-  document.getElementById('stat-spent').textContent       = fmt(spentMonth);
-  document.getElementById('stat-spent-count').textContent = `${spentCount} ${t('stat_expenses')}`;
+  // ── Dépenses épicerie ce mois (listes de courses) ─────────
+  const monthLists   = (db.shoppingLists || []).filter(l => l.date && l.date.startsWith(thisMonth));
+  const grocerySpent = monthLists
+    .flatMap(l => l.items || [])
+    .filter(i => i.checked && i.unit_price > 0)
+    .reduce((s, i) => s + (i.quantity || 1) * i.unit_price, 0);
+  document.getElementById('stat-spent').textContent       = fmt(grocerySpent);
+  document.getElementById('stat-spent-count').textContent = `${monthLists.length} ${t('stat_lists')}`;
 
   // ── Reste à dépenser ──────────────────────────────────────
-  const remaining = budgetMonth - spentMonth;
-  const remEl     = document.getElementById('stat-remaining');
-  remEl.textContent = fmt(remaining);
-  remEl.className   = 'stat-value' + (remaining < 0 ? ' text-danger' : remaining < budgetMonth * 0.2 && budgetMonth > 0 ? ' text-warning' : '');
+  const remEl  = document.getElementById('stat-remaining');
   const remSub = document.getElementById('stat-remaining-sub');
-  if (remaining < 0) {
-    remSub.textContent = t('stat_over_budget');
-    remSub.className   = 'text-danger';
+  if (budgetMonth <= 0) {
+    remEl.textContent = '—';
+    remEl.className   = 'stat-value';
+    remSub.textContent = t('stat_no_budget_set');
+    remSub.className   = 'text-muted';
   } else {
-    const pct = budgetMonth > 0 ? Math.round(remaining / budgetMonth * 100) : 0;
-    remSub.textContent = `${pct}% ${t('pct_of_total')}`;
-    remSub.className   = '';
+    const remaining = budgetMonth - grocerySpent;
+    remEl.textContent = fmt(remaining);
+    remEl.className   = 'stat-value' + (remaining < 0 ? ' text-danger' : remaining < budgetMonth * 0.2 ? ' text-warning' : '');
+    if (remaining < 0) {
+      remSub.textContent = t('stat_over_budget');
+      remSub.className   = 'text-danger';
+    } else {
+      remSub.textContent = `${Math.round(remaining / budgetMonth * 100)}% ${t('pct_of_total')}`;
+      remSub.className   = '';
+    }
   }
 
-  // ── Moyenne dépenses mensuelles (12 mois) ─────────────────
+  // ── Barre de progression budget épicerie ──────────────────
+  const pctUsed  = budgetMonth > 0 ? Math.min(100, Math.round(grocerySpent / budgetMonth * 100)) : 0;
+  const barColor = pctUsed >= 100 ? 'bg-danger' : pctUsed >= 80 ? 'bg-warning' : 'bg-success';
+  const barEl    = document.getElementById('grocery-budget-bar');
+  barEl.style.width = pctUsed + '%';
+  barEl.className   = `progress-bar ${barColor}`;
+  barEl.setAttribute('aria-valuenow', pctUsed);
+  document.getElementById('grocery-budget-pct').textContent = budgetMonth > 0
+    ? `${fmt(grocerySpent)} / ${fmt(budgetMonth)} — ${pctUsed}% ${t('stat_budget_used')}`
+    : t('stat_no_budget_set');
+
+  // ── Moyenne épicerie mensuelle (12 mois) ──────────────────
   const months12 = {};
   for (let i = 0; i < 12; i++) {
     const d   = new Date(now.getFullYear(), now.getMonth() - i, 1);
     const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
     months12[key] = 0;
   }
-  (db.expenses || []).forEach(e => {
-    const m = e.date.slice(0, 7);
-    if (m in months12) months12[m] += e.amount;
-  });
-  (db.invoices || []).forEach(inv => {
-    const m = inv.date.slice(0, 7);
-    if (m in months12) months12[m] += _invoiceTotal(inv);
+  (db.shoppingLists || []).forEach(l => {
+    const m = l.date ? l.date.slice(0, 7) : null;
+    if (m && m in months12) {
+      months12[m] += (l.items || [])
+        .filter(i => i.checked && i.unit_price > 0)
+        .reduce((s, i) => s + (i.quantity || 1) * i.unit_price, 0);
+    }
   });
   const avg = Object.values(months12).reduce((a, b) => a + b, 0) / 12;
   document.getElementById('stat-avg').textContent = fmt(avg);
