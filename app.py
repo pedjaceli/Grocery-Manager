@@ -1,5 +1,5 @@
 import os
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from functools import wraps
 from flask import Flask, jsonify, request, send_from_directory, session, redirect, render_template
 from sqlalchemy import text, inspect as sa_inspect
@@ -23,6 +23,13 @@ elif database_url.startswith('postgresql://'):
 app.config['SQLALCHEMY_DATABASE_URI']        = database_url
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SECRET_KEY']                     = os.environ.get('SECRET_KEY', 'dev-secret-key')
+
+# Sessions persistantes : l'utilisateur reste connecté 30 jours sur le même appareil
+app.config['PERMANENT_SESSION_LIFETIME'] = timedelta(days=30)
+app.config['SESSION_COOKIE_HTTPONLY']    = True
+app.config['SESSION_COOKIE_SAMESITE']    = 'Lax'
+# Cookie "Secure" activé en production (HTTPS) uniquement
+app.config['SESSION_COOKIE_SECURE']      = os.environ.get('FLASK_ENV') != 'development' and bool(os.environ.get('DATABASE_URL'))
 
 db.init_app(app)
 
@@ -140,6 +147,7 @@ def login():
     password = request.form.get('password', '')
     user = User.query.filter_by(username=username).first()
     if user and user.check_password(password):
+        session.permanent = True
         session['logged_in'] = True
         session['username']  = user.username
         session['is_admin']  = user.is_admin
@@ -191,6 +199,7 @@ def register():
     _seed_default_categories(user.id)
     _seed_default_inventory_locations(user.id)
     db.session.commit()
+    session.permanent = True
     session['logged_in'] = True
     session['username']  = user.username
     session['is_admin']  = user.is_admin
