@@ -2,7 +2,7 @@
 
 Une application web pour gérer ton épicerie au quotidien : listes de courses, inventaire, suivi des prix, factures et budget.
 
-🔗 **Application en ligne** : [https://revenue-manager.onrender.com](https://grocery-manager.onrender.com)
+🔗 **Application en ligne** : [https://revenue-manager.onrender.com](https://revenue-manager.onrender.com)
 
 ## Fonctionnalités
 
