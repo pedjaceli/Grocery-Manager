@@ -441,7 +441,7 @@ def create_user():
 def delete_user(id):
     user = User.query.get_or_404(id)
     if user.username == session.get('username'):
-        return jsonify({'error': 'Tu ne peux pas supprimer ton propre compte.'}), 403
+        return jsonify({'error': 'Vous ne pouvez pas supprimer votre propre compte.'}), 403
 
     # Supprimer toutes les données appartenant à l'utilisateur (pas de ON DELETE CASCADE en DB)
     PriceRecord.query.filter_by(user_id=id).delete(synchronize_session=False)
