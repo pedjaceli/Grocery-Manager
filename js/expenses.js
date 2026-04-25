@@ -138,6 +138,45 @@ function _resetScanReceiptUI() {
   if (btn) btn.disabled = false;
 }
 
+// Downscale + recompress an image File to a JPEG Blob.
+// Keeps receipts readable for OCR while staying well under server limits.
+async function _compressReceiptImage(file, maxDim = 1800, quality = 0.82) {
+  // Skip compression for tiny images (already small, e.g. screenshots)
+  if (file.size < 500 * 1024) return file;
+
+  try {
+    const bitmap = await (window.createImageBitmap
+      ? createImageBitmap(file)
+      : new Promise((resolve, reject) => {
+          const img = new Image();
+          img.onload  = () => resolve(img);
+          img.onerror = reject;
+          img.src = URL.createObjectURL(file);
+        }));
+
+    const w = bitmap.width  || bitmap.naturalWidth;
+    const h = bitmap.height || bitmap.naturalHeight;
+    const scale = Math.min(1, maxDim / Math.max(w, h));
+    const outW = Math.round(w * scale);
+    const outH = Math.round(h * scale);
+
+    const canvas = document.createElement('canvas');
+    canvas.width  = outW;
+    canvas.height = outH;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(bitmap, 0, 0, outW, outH);
+
+    const blob = await new Promise(resolve =>
+      canvas.toBlob(resolve, 'image/jpeg', quality)
+    );
+    if (!blob) return file;
+    // Only keep the compressed version if it's actually smaller
+    return blob.size < file.size ? blob : file;
+  } catch {
+    return file; // fall back to original on any failure
+  }
+}
+
 async function handleReceiptUpload(file) {
   if (!file) return;
   const btn    = document.getElementById('scanReceiptBtn');
@@ -146,8 +185,9 @@ async function handleReceiptUpload(file) {
   status.textContent = t('scan_receipt_progress');
 
   try {
+    const compressed = await _compressReceiptImage(file);
     const fd = new FormData();
-    fd.append('image', file);
+    fd.append('image', compressed, 'receipt.jpg');
     const res = await fetch('/api/invoices/scan-receipt', { method: 'POST', body: fd });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || 'Scan failed');

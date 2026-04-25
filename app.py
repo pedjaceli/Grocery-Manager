@@ -608,8 +608,8 @@ def scan_receipt():
 
     f = request.files['image']
     raw = f.read()
-    if len(raw) > 8 * 1024 * 1024:
-        return jsonify({'error': 'Image too large (max 8MB)'}), 400
+    if len(raw) > 16 * 1024 * 1024:
+        return jsonify({'error': 'Image too large (max 16MB)'}), 400
 
     mime = f.mimetype or 'image/jpeg'
     if mime not in ('image/jpeg', 'image/png', 'image/webp', 'image/gif'):
