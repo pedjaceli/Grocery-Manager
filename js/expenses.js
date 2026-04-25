@@ -311,7 +311,7 @@ function addInvoiceItemRow(item = null) {
     <td style="width:120px">
       <input type="number" class="form-control form-control-sm inv-price"
              value="${item ? +(item.quantity * item.unit_price).toFixed(2) : ''}"
-             min="0.01" step="0.01" placeholder="0.00" />
+             min="0" step="0.01" placeholder="0.00" />
     </td>
     <td style="width:40px">
       <button type="button" class="btn btn-outline-danger btn-sm"
@@ -458,21 +458,35 @@ async function submitInvoice() {
   }
 
   const items = [];
-  let valid = true;
+  const badRows = [];
+  // Clear any previous invalid-row highlights
   document.querySelectorAll('#inv-items-body tr').forEach(tr => {
-    const product_name = tr.querySelector('.inv-product').value.trim();
-    const quantity     = parseFloat(tr.querySelector('.inv-qty').value);
-    const total_price  = parseFloat(tr.querySelector('.inv-price').value);
-    if (!product_name || isNaN(quantity) || isNaN(total_price) || quantity < 0 || total_price < 0) {
-      valid = false;
+    tr.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
+  });
+  document.querySelectorAll('#inv-items-body tr').forEach((tr, idx) => {
+    const productInput = tr.querySelector('.inv-product');
+    const qtyInput     = tr.querySelector('.inv-qty');
+    const priceInput   = tr.querySelector('.inv-price');
+    const product_name = productInput.value.trim();
+    const quantity     = parseFloat(qtyInput.value);
+    const total_price  = parseFloat(priceInput.value);
+
+    const reasons = [];
+    if (!product_name)              { reasons.push('nom'); productInput.classList.add('is-invalid'); }
+    if (isNaN(quantity) || quantity < 0) { reasons.push('qté'); qtyInput.classList.add('is-invalid'); }
+    if (isNaN(total_price) || total_price < 0) { reasons.push('prix'); priceInput.classList.add('is-invalid'); }
+
+    if (reasons.length) {
+      badRows.push(`ligne ${idx + 1} (${reasons.join(', ')})`);
       return;
     }
     const unit_price = quantity > 0 ? total_price / quantity : total_price;
     items.push({ product_name, quantity, unit_price });
   });
 
-  if (!valid || items.length === 0) {
-    showToast(t('err_inv_items'), 'error');
+  if (badRows.length || items.length === 0) {
+    const detail = badRows.length ? ` — ${badRows.join(', ')}` : '';
+    showToast(t('err_inv_items') + detail, 'error');
     return;
   }
 
@@ -488,8 +502,9 @@ async function submitInvoice() {
     }
     bsInvoiceModal.hide();
     renderInvoiceList();
-  } catch {
-    showToast(t('toast_save_error'), 'error');
+  } catch (e) {
+    console.error('[invoice-save]', e);
+    showToast(`${t('toast_save_error')} — ${e?.message || 'inconnu'}`, 'error');
   } finally {
     btn.disabled = false;
   }
