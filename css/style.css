@@ -1379,3 +1379,13 @@ input:-webkit-autofill:focus {
   #page-title { font-size: 0.98rem; }
 }
 
+
+/* Pulse highlight for the Save button after a successful receipt scan */
+@keyframes btnPulse {
+  0%   { box-shadow: 0 0 0 0   rgba(16,185,129,0.55); }
+  70%  { box-shadow: 0 0 0 14px rgba(16,185,129,0);   }
+  100% { box-shadow: 0 0 0 0   rgba(16,185,129,0);   }
+}
+.btn-pulse {
+  animation: btnPulse 1.4s ease-out 3;
+}

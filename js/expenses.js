@@ -178,10 +178,14 @@ async function _compressReceiptImage(file, maxDim = 1800, quality = 0.82) {
 }
 
 async function handleReceiptUpload(file) {
-  if (!file) return;
   const btn    = document.getElementById('scanReceiptBtn');
   const status = document.getElementById('scan-receipt-status');
+  if (!file) {
+    if (status) { status.style.color = '#fca5a5'; status.textContent = '⚠ Aucun fichier reçu'; }
+    return;
+  }
   btn.disabled = true;
+  status.style.color = '';
   status.textContent = t('scan_receipt_progress');
 
   try {
@@ -189,8 +193,10 @@ async function handleReceiptUpload(file) {
     const fd = new FormData();
     fd.append('image', compressed, 'receipt.jpg');
     const res = await fetch('/api/invoices/scan-receipt', { method: 'POST', body: fd });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || 'Scan failed');
+    let data;
+    try { data = await res.json(); }
+    catch { throw new Error(`HTTP ${res.status} — réponse non-JSON`); }
+    if (!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
 
     if (data.title) document.getElementById('inv-title').value = data.title;
     if (data.date)  document.getElementById('inv-date').value  = data.date;
@@ -212,11 +218,22 @@ async function handleReceiptUpload(file) {
       updateInvoiceLineTotals();
     }
 
+    status.style.color = '#6ee7b7';
     status.textContent = t('scan_receipt_done');
     showToast(t('scan_receipt_done'), 'success');
+    // Highlight the Save button so the user sees they still need to confirm
+    const saveBtn = document.getElementById('invoiceSubmitBtn');
+    if (saveBtn) {
+      saveBtn.classList.add('btn-pulse');
+      saveBtn.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      setTimeout(() => saveBtn.classList.remove('btn-pulse'), 6000);
+    }
   } catch (e) {
-    status.textContent = '';
-    showToast(e.message || t('scan_receipt_error'), 'error');
+    const msg = e?.message || t('scan_receipt_error');
+    status.textContent = '⚠ ' + msg;
+    status.style.color = '#fca5a5';
+    showToast(msg, 'error');
+    console.error('[scan-receipt]', e);
   } finally {
     btn.disabled = false;
     document.getElementById('receipt-file').value = '';
