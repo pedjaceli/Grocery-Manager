@@ -112,6 +112,7 @@ class Invoice(db.Model):
     id         = db.Column(db.String(36),  primary_key=True, default=gen_id)
     title      = db.Column(db.String(200), nullable=False)
     date       = db.Column(db.String(10),  nullable=False)
+    category   = db.Column(db.String(36),  nullable=True)  # FK loose to expense_categories
     user_id    = db.Column(db.String(36),  db.ForeignKey('users.id'), nullable=True)
     created_at = db.Column(db.DateTime,    default=lambda: datetime.now(timezone.utc))
     items      = db.relationship('InvoiceItem', backref='invoice', lazy=True, cascade='all, delete-orphan')
@@ -121,6 +122,7 @@ class Invoice(db.Model):
             'id':        self.id,
             'title':     self.title,
             'date':      self.date,
+            'category':  self.category,
             'items':     [i.to_dict() for i in self.items],
             'total':     round(sum(i.quantity * i.unit_price for i in self.items), 2),
             'createdAt': self.created_at.isoformat(),

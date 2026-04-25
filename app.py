@@ -103,9 +103,10 @@ with app.app_context():
     existing_tables = inspector.get_table_names()
     with db.engine.connect() as conn:
         for tbl, col, typ in [
-            ('expense_categories', 'user_id', 'VARCHAR(36)'),
-            ('expenses',           'user_id', 'VARCHAR(36)'),
-            ('invoices',           'user_id', 'VARCHAR(36)'),
+            ('expense_categories', 'user_id',  'VARCHAR(36)'),
+            ('expenses',           'user_id',  'VARCHAR(36)'),
+            ('invoices',           'user_id',  'VARCHAR(36)'),
+            ('invoices',           'category', 'VARCHAR(36)'),
         ]:
             if tbl in existing_tables:
                 cols = [c['name'] for c in inspector.get_columns(tbl)]
@@ -579,9 +580,10 @@ def get_invoices():
 def create_invoice():
     data    = request.get_json()
     invoice = Invoice(
-        title   = data['title'],
-        date    = data['date'],
-        user_id = session['user_id'],
+        title    = data['title'],
+        date     = data['date'],
+        category = data.get('category') or None,
+        user_id  = session['user_id'],
     )
     db.session.add(invoice)
     db.session.flush()
@@ -657,8 +659,10 @@ def scan_receipt():
 def update_invoice(id):
     invoice = Invoice.query.filter_by(id=id, user_id=session['user_id']).first_or_404()
     data    = request.get_json()
-    invoice.title = data.get('title', invoice.title)
-    invoice.date  = data.get('date',  invoice.date)
+    invoice.title    = data.get('title',    invoice.title)
+    invoice.date     = data.get('date',     invoice.date)
+    if 'category' in data:
+        invoice.category = data.get('category') or None
     InvoiceItem.query.filter_by(invoice_id=id).delete()
     for item in data.get('items', []):
         db.session.add(InvoiceItem(

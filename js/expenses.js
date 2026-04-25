@@ -117,12 +117,26 @@ function renderInvoiceList() {
 let editingInvoiceId = null;
 let bsInvoiceModal;
 
+function _populateInvoiceCategoryOptions(selectedId) {
+  const sel = document.getElementById('inv-category');
+  if (!sel) return;
+  const cats = db.expenseCategories || [];
+  const noneLabel = t('cat_none') || '— Aucune —';
+  sel.innerHTML =
+    `<option value="">${escHtml(noneLabel)}</option>` +
+    cats.map(c =>
+      `<option value="${escHtml(c.id)}">${escHtml((c.icon || '') + ' ' + c.name)}</option>`
+    ).join('');
+  sel.value = selectedId || '';
+}
+
 function openAddInvoiceModal() {
   editingInvoiceId = null;
   document.getElementById('invoiceModalTitle').textContent = t('modal_add_invoice');
   document.getElementById('inv-title').value = '';
   document.getElementById('inv-date').value  = new Date().toISOString().slice(0, 10);
   document.getElementById('inv-items-body').innerHTML = '';
+  _populateInvoiceCategoryOptions('');
   addInvoiceItemRow();
   updateInvoiceLineTotals();
   _resetScanReceiptUI();
@@ -282,6 +296,7 @@ function openEditInvoiceModal(id) {
   document.getElementById('invoiceModalTitle').textContent = t('modal_edit_invoice');
   document.getElementById('inv-title').value = inv.title;
   document.getElementById('inv-date').value  = inv.date;
+  _populateInvoiceCategoryOptions(inv.category || '');
   document.getElementById('inv-items-body').innerHTML = '';
   if (inv.items.length > 0) {
     inv.items.forEach(item => addInvoiceItemRow(item));
@@ -449,8 +464,9 @@ function updateInvoiceLineTotals() {
 }
 
 async function submitInvoice() {
-  const title = document.getElementById('inv-title').value.trim();
-  const date  = document.getElementById('inv-date').value;
+  const title    = document.getElementById('inv-title').value.trim();
+  const date     = document.getElementById('inv-date').value;
+  const category = document.getElementById('inv-category')?.value || null;
 
   if (!title || !date) {
     showToast(t('err_inv_required'), 'error');
@@ -494,14 +510,15 @@ async function submitInvoice() {
   btn.disabled = true;
   try {
     if (editingInvoiceId) {
-      await updateInvoice(editingInvoiceId, { title, date, items });
+      await updateInvoice(editingInvoiceId, { title, date, category, items });
       showToast(t('toast_invoice_updated'));
     } else {
-      await addInvoice({ title, date, items });
+      await addInvoice({ title, date, category, items });
       showToast(t('toast_invoice_added'));
     }
     bsInvoiceModal.hide();
     renderInvoiceList();
+    if (typeof renderDashboard === 'function') renderDashboard();
   } catch (e) {
     console.error('[invoice-save]', e);
     showToast(`${t('toast_save_error')} — ${e?.message || 'inconnu'}`, 'error');

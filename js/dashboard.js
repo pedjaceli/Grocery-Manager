@@ -44,14 +44,18 @@ function renderDashboard() {
   document.getElementById('stat-month').textContent     = budgetMonth > 0 ? fmt(budgetMonth) : '—';
   document.getElementById('stat-month-sub').textContent = t(budgetMonth > 0 ? 'stat_budget_month' : 'stat_set_budget');
 
-  // ── Dépenses épicerie ce mois (listes de courses) ─────────
-  const monthLists   = (db.shoppingLists || []).filter(l => l.date && l.date.startsWith(thisMonth));
-  const grocerySpent = monthLists
+  // ── Dépenses épicerie ce mois (listes de courses + factures) ──
+  const monthLists       = (db.shoppingLists || []).filter(l => l.date && l.date.startsWith(thisMonth));
+  const monthInvoicesAll = (db.invoices       || []).filter(i => i.date && i.date.startsWith(thisMonth));
+  const fromLists    = monthLists
     .flatMap(l => l.items || [])
     .filter(i => i.checked && i.unit_price > 0)
     .reduce((s, i) => s + (i.quantity || 1) * i.unit_price, 0);
+  const fromInvoices = monthInvoicesAll.reduce((s, i) => s + _invoiceTotal(i), 0);
+  const grocerySpent = fromLists + fromInvoices;
   document.getElementById('stat-spent').textContent       = fmt(grocerySpent);
-  document.getElementById('stat-spent-count').textContent = `${monthLists.length} ${t('stat_lists')}`;
+  const sourcesCount = monthLists.length + monthInvoicesAll.length;
+  document.getElementById('stat-spent-count').textContent = `${sourcesCount} ${t('stat_lists')}`;
 
   // ── Reste à dépenser ──────────────────────────────────────
   const remEl  = document.getElementById('stat-remaining');
@@ -99,6 +103,10 @@ function renderDashboard() {
         .filter(i => i.checked && i.unit_price > 0)
         .reduce((s, i) => s + (i.quantity || 1) * i.unit_price, 0);
     }
+  });
+  (db.invoices || []).forEach(inv => {
+    const m = inv.date ? inv.date.slice(0, 7) : null;
+    if (m && m in months12) months12[m] += _invoiceTotal(inv);
   });
   const avg = Object.values(months12).reduce((a, b) => a + b, 0) / 12;
   document.getElementById('stat-avg').textContent = fmt(avg);
